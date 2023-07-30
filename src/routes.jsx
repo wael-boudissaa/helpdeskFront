@@ -25,8 +25,8 @@ export const routes = [
       },
       {
         icon: <UserCircleIcon {...icon} />,
-        name: "profile",
-        path: "/profile",
+        name: "profiles",
+        path: "/profiles",
         element: <Profile />,
       },
       {
@@ -37,8 +37,8 @@ export const routes = [
       },
       {
         icon: <BellIcon {...icon} />,
-        name: "notifactions",
-        path: "/notifactions",
+        name: "messages",
+        path: "/messages",
         element: <Notifications />,
       },
     ],
@@ -48,16 +48,16 @@ export const routes = [
     layout: "auth",
     pages: [
       {
-        icon: <ArrowRightOnRectangleIcon {...icon} />,
-        name: "sign in",
-        path: "/sign-in",
-        element: <SignIn />,
-      },
-      {
         icon: <UserPlusIcon {...icon} />,
-        name: "sign up",
+        name: "add a user",
         path: "/sign-up",
         element: <SignUp />,
+      },
+      {
+        icon: <ArrowRightOnRectangleIcon {...icon} />,
+        name: "Log Out",
+        path: "/sign-in",
+        element: <SignIn />,
       },
     ],
   },

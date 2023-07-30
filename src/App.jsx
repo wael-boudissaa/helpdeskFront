@@ -11,7 +11,7 @@ function App() {
       <Route path="/dashboard/*" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
       <Route path="/auth/*" element={<Auth />} />
       <Route
-        path=""
+        path="*"
         element={
           <Navigate to={user ? "/dashboard/home" : "auth/sign-in"} replace />
         }

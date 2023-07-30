@@ -5,7 +5,6 @@ import {
   Button,
   IconButton,
   Breadcrumbs,
-  Input,
   Menu,
   MenuHandler,
   MenuList,
@@ -72,9 +71,6 @@ export function DashboardNavbar() {
           </Typography>
         </div>
         <div className="flex items-center">
-          <div className="mr-auto md:mr-4 md:w-56">
-            <Input label="Type here" />
-          </div>
           <IconButton
             variant="text"
             color="blue-gray"
@@ -90,7 +86,7 @@ export function DashboardNavbar() {
               className="hidden items-center gap-1 px-4 xl:flex"
             >
               <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-              Sign In
+              Username
             </Button>
             <IconButton
               variant="text"

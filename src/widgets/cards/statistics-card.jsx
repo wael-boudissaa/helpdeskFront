@@ -22,7 +22,7 @@ export function StatisticsCard({ color, icon, title, value, footer }) {
           {title}
         </Typography>
         <Typography variant="h4" color="blue-gray">
-          {value}
+          {value /* Dynamic */}
         </Typography>
       </CardBody>
       {footer && (
