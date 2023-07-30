@@ -11,24 +11,39 @@ import {
 } from "@material-tailwind/react";
 import AuthContext from "@/context/AuthContext";
 import { useContext, useState } from "react";
-
-
+import SnackBar from "@/widgets/SnackBar";
+import { useNavigate } from "react-router-dom";
 
 export function SignIn() {
+  const { loginUser } = useContext(AuthContext);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [color, setColor] = useState("");
 
-  const {loginUser} = useContext(AuthContext);
-  const [username,setUsername]=useState("");
-  const [password , setPassword]= useState("");
-  
-  const handleSubmit = (e) => {
-    let user = {username: username, password: password};
-    console.log(user);
+  const handleSnackbarClose = () => {
+    setShowSnackbar(false);
+  };
 
-    loginUser(user);
-    setUsername("");
-    setPassword("");
+  const navigate = useNavigate();
 
-  }
+  const handleSubmit = async (e) => {
+    let user = { username: username, password: password };
+    const loginResult = await loginUser(user);
+    if (loginResult.success) {
+      setSnackbarMessage("Successfully logged in!");
+      setShowSnackbar(true);
+      setColor("bg-green-300");
+      const delayTime = 1000;
+      await new Promise((resolve) => setTimeout(resolve, delayTime));
+      navigate("/dashboard/home");
+    } else {
+      setSnackbarMessage(`${loginResult.error}`);
+      setShowSnackbar(true);
+      setColor("bg-red-300");
+    }
+  };
 
   return (
     <>
@@ -49,8 +64,20 @@ export function SignIn() {
             </Typography>
           </CardHeader>
           <CardBody className="flex flex-col gap-4">
-            <Input type="text" label="username" size="lg" value={username} onChange={(e)=>setUsername(e.target.value)}/>
-            <Input type="password" label="Password" size="lg" value={password} onChange={(e)=>setPassword(e.target.value)} />
+            <Input
+              type="text"
+              label="username"
+              size="lg"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <Input
+              type="password"
+              label="Password"
+              size="lg"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </CardBody>
           <CardFooter className="pt-0">
             <Button onClick={handleSubmit} variant="gradient" fullWidth>
@@ -58,6 +85,13 @@ export function SignIn() {
             </Button>
           </CardFooter>
         </Card>
+        {showSnackbar && (
+          <SnackBar
+            color={color}
+            snackbarMessage={snackbarMessage}
+            closeSnackBar={handleSnackbarClose}
+          />
+        )}
       </div>
     </>
   );
