@@ -27,6 +27,7 @@ import {
   projectsTableData,
   ordersOverviewData,
 } from "@/data";
+import { Tables } from ".";
 
 export function Home() {
   return (
@@ -49,6 +50,7 @@ export function Home() {
           />
         ))}
       </div>
+      {/* <Tables/> */}
       {/* <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
         {statisticsChartsData.map((props) => (
           <StatisticsChart

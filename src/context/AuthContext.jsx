@@ -65,8 +65,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  let logoutUser = (e) => {
-    e.preventDefault();
+  let logoutUser = () => {
     localStorage.removeItem("authTokens");
     setAuthTokens(null);
     setUser(null);
@@ -105,43 +104,62 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const authTokens = localStorage.getItem("authTokens");
-      const currentTime = Date.now() / 1000;
-      if (authTokens) {
-        const u = jwtDecode(authTokens);
-        if (u.exp < currentTime) {
-          alert("Your session has expired, please loggin again");
-          navigate("/auth/sign-in");
-          setAuthTokens(null);
-          setUser(null);
-          localStorage.removeItem("authTokens");
-        } else {
-          setAuthTokens(JSON.parse(authTokens));
-          setUser(jwtDecode(authTokens));
-          fetch("http://127.0.0.1:8000/api/token/refresh/", {
+    const tokens = localStorage.getItem("authTokens");
+    const currentTime = Date.now() / 1000;
+    if (tokens) {
+      const u = jwtDecode(tokens);
+      if (u.exp < currentTime) {
+        alert("Your session has expired, please loggin again");
+        navigate("/auth/sign-in");
+        setAuthTokens(null);
+        setUser(null);
+        localStorage.removeItem("authTokens");
+      } else {
+        console.log(authTokens.refresh);
+        /*fetch("http://127.0.0.1:8000/api/token/refresh/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ refresh: authTokens.refresh }),
+        })
+          .then((res) => {
+            if (res.status == 200) {
+              return res.json();
+            } else logoutUser();
+          })
+          .then((data) => {
+            setAuthTokens(data);
+            setUser(jwtDecode(data.access));
+            localStorage.setItem("authTokens", JSON.stringify(data));
+          })
+          .catch((err) => {
+            console.log(err);
+          });*/
+        setAuthTokens(tokens);
+        setUser(jwtDecode(tokens));
+        const fechData = async () =>{
+          const response = await fetch("http://127.0.0.1:8000/api/token/refresh/", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ refresh: authTokens?.refresh }),
-          })
-            .then((res) => {
-              if(res.ok){
-                return res.json();
-              }
-              else logoutUser();
-            })
-            .then((data) => {
-              setAuthTokens(data);
-              setUser(jwtDecode(data.access));
-              localStorage.setItem("authTokens", JSON.stringify(data));
-            }).catch((err) => {console.log(err)});
+            body: JSON.stringify({ refresh: authTokens.refresh }),
+          });
+          if(response.ok){
+            const data = await response.json();
+            setAuthTokens(data);
+            setUser(jwtDecode(data.access));
+            localStorage.setItem("authTokens", JSON.stringify(data));
+          }else{
+            logoutUser();
+          }
         }
-      } else {
-        setAuthTokens(null);
-        setUser(null);
+        fechData();
       }
+    } else {
+      setAuthTokens(null);
+      setUser(null);
     }
   }, []);
 
