@@ -113,7 +113,8 @@ export const AuthProvider = ({ children }) => {
     }
     if (!hasEffectRunInSession) {
       if (tokens) {
-        const u = jwtDecode(tokens);
+        const t = JSON.parse(tokens)
+        const u = jwtDecode(t.refresh);
         if (u.exp < currentTime) {
           alert("Your session has expired, please log in again");
           navigate("/auth/sign-in");

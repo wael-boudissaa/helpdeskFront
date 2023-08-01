@@ -10,22 +10,59 @@ import {
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { authorsTableData, projectsTableData } from "@/data";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import AuthContext from "@/context/AuthContext";
+import { useMaterialTailwindController } from "@/context";
 
 export function Tables(props) {
-  const selectedTable=props.selectedTable;
+  const selectedTable = props.selectedTable;
+  const { user, authTokens } = useContext(AuthContext);
+  const [tickets, setTickets] = useState([]);
+  const [controller, dispatch] = useMaterialTailwindController();
+  const { sidenavColor } = controller;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const authorization = "Bearer " + authTokens.access;
+      //alert(authorization);
+      const requestOptions = {
+        method: "GET",
+        headers: {
+          Authorization: authorization,
+        },
+      };
+      try {
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/tickets",
+          requestOptions
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setTickets(data);
+        } else {
+          console.log("Failed to fetch");
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
       <Card>
-        <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
+        <CardHeader variant="gradient" color={sidenavColor} className="mb-8 p-6">
           <Typography variant="h6" color="white">
-             {selectedTable ? "Validated Tickets Table":"Waiting Tickets Table"} 
+            {selectedTable
+              ? "Validated Tickets Table"
+              : "Waiting Tickets Table"}
           </Typography>
         </CardHeader>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
           <table className="w-full min-w-[640px] table-auto">
             <thead>
-              <tr> 
+              <tr>
                 {["Expert", "categorie", "issue", "Date", ""].map((el) => (
                   <th
                     key={el}
@@ -42,52 +79,55 @@ export function Tables(props) {
               </tr>
             </thead>
             <tbody>
-              {authorsTableData.map(
-                ({ img, name, email, job, online, date }, key) => {
+              {tickets.map(
+                ({ expertName, category, issue, creationDate, expertJob }, key) => {
                   const className = `py-3 px-5 ${
-                    key === authorsTableData.length - 1
+                    key === tickets.length - 1
                       ? ""
                       : "border-b border-blue-gray-50"
                   }`;
 
                   return (
-                    <tr key={name}>
+                    <tr key={expertName}>
                       <td className={className}>
                         <div className="flex items-center gap-4">
-                          <Avatar src={img} alt={name} size="sm" />
+                          {/* <Avatar src={img} alt={name} size="sm" /> */}
                           <div>
                             <Typography
                               variant="small"
                               color="blue-gray"
                               className="font-semibold"
                             >
-                              {name}
+                              {expertName}
                             </Typography>
                             <Typography className="text-xs font-normal text-blue-gray-500">
-                              {email}
+                              {expertJob}
                             </Typography>
                           </div>
                         </div>
                       </td>
                       <td className={className}>
                         <Typography className="text-xs font-semibold text-blue-gray-600">
-                          {job[0]}
+                          {category}
                         </Typography>
-                        <Typography className="text-xs font-normal text-blue-gray-500">
+                        {/* <Typography className="text-xs font-normal text-blue-gray-500">
                           {job[1]}
-                        </Typography>
+                        </Typography> */}
                       </td>
                       <td className={className}>
-                        <Chip
+                        <Typography className="text-xs font-semibold text-blue-gray-600">
+                          {issue}
+                        </Typography>
+                        {/* <Chip
                           variant="gradient"
                           color={online ? "green" : "blue-gray"}
                           value={online ? "online" : "offline"}
                           className="py-0.5 px-2 text-[11px] font-medium"
-                        />
+                        /> */}
                       </td>
                       <td className={className}>
                         <Typography className="text-xs font-semibold text-blue-gray-600">
-                          {date}
+                          {creationDate}
                         </Typography>
                       </td>
                       <td className={className}>
