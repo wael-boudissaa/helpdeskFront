@@ -51,6 +51,15 @@ export function Dashboard() {
                 )
               )
           )}
+          {/* <Route
+            path="*"
+            element={
+              <Navigate
+                to="/dashboard/home"
+                replace
+              />
+            }
+          /> */}
         </Routes>
       </div>
     </div>
