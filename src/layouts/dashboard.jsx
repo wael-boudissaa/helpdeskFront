@@ -9,6 +9,7 @@ import {
 } from "@/widgets/layout";
 import routes from "@/routes";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
+import PrivateAdminRoute from "@/utils/PrivateAdminRoute";
 
 export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -38,9 +39,17 @@ export function Dashboard() {
           {routes.map(
             ({ layout, pages }) =>
               layout === "dashboard" &&
-              pages.map(({ path, element }) => (
-                <Route exact path={path} element={element} />
-              ))
+              pages.map(({ path, element }) =>
+                path === "/profiles" ? (
+                  <Route
+                    exact
+                    path={path}
+                    element={<PrivateAdminRoute>{element}</PrivateAdminRoute>}
+                  />
+                ) : (
+                  <Route exact path={path} element={element} />
+                )
+              )
           )}
         </Routes>
       </div>

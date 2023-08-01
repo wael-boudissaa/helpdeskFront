@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Typography,
   Card,
@@ -30,6 +30,11 @@ import {
 import { Tables } from ".";
 
 export function Home() {
+  const [selectedTable,setSelectedTable]=useState(false);
+  const switchTable =(title)=> {
+    if (title==="Validated Tickets") setSelectedTable(true)
+    else setSelectedTable(false)
+  }
   return (
     <div className="mt-12">
       <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
@@ -37,6 +42,7 @@ export function Home() {
           <StatisticsCard
             key={title}
             {...rest}
+            switchTable={switchTable}
             title={title}
             icon={React.createElement(icon, {
               className: "w-6 h-6 text-white",
@@ -50,7 +56,7 @@ export function Home() {
           />
         ))}
       </div>
-      {/* <Tables/> */}
+      <Tables selectedTable={selectedTable}/>
       {/* <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
         {statisticsChartsData.map((props) => (
           <StatisticsChart

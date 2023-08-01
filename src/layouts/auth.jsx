@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { Navbar, Footer } from "@/widgets/layout";
 import routes from "@/routes";
+import PrivateAdminRoute from "@/utils/PrivateAdminRoute";
 
 export function Auth() {
   /*const navbarRoutes = [
@@ -40,9 +41,17 @@ export function Auth() {
         {routes.map(
           ({ layout, pages }) =>
             layout === "auth" &&
-            pages.map(({ path, element }) => (
-              <Route exact path={path} element={element} />
-            ))
+            pages.map(({ path, element }) =>
+              path === "/sign-up" ? (
+                <Route
+                  exact
+                  path={path}
+                  element={<PrivateAdminRoute>{element}</PrivateAdminRoute>}
+                />
+              ) : (
+                <Route exact path={path} element={element} />
+              )
+            )
         )}
       </Routes>
       {/*<div className="container absolute bottom-8 left-2/4 z-10 mx-auto -translate-x-2/4 text-white">

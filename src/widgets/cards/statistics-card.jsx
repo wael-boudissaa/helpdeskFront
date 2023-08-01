@@ -7,9 +7,9 @@ import {
 } from "@material-tailwind/react";
 import PropTypes from "prop-types";
 
-export function StatisticsCard({ color, icon, title, value, footer }) {
+export function StatisticsCard({ color, icon, title, value, footer, switchTable }) {
   return (
-    <Card>
+    <Card onClick={()=>switchTable(title)} className="cursor-pointer hover:scale-105 transition-all">
       <CardHeader
         variant="gradient"
         color={color}

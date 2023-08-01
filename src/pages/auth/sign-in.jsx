@@ -45,6 +45,10 @@ export function SignIn() {
     }
   };
 
+  useEffect(()=> {
+    if (user) logoutUser();
+  }, [])
+
   return (
     <>
       <img

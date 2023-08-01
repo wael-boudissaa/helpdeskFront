@@ -101,67 +101,57 @@ export const AuthProvider = ({ children }) => {
     show: show,
     loginUser: loginUser,
     logoutUser: logoutUser,
-  };
+  };                                                               
 
   useEffect(() => {
+    // Check if the flag for the current session exists
+    const hasEffectRunInSession = sessionStorage.getItem("hasEffectRunInSession");
     const tokens = localStorage.getItem("authTokens");
     const currentTime = Date.now() / 1000;
-    if (tokens) {
-      const u = jwtDecode(tokens);
-      if (u.exp < currentTime) {
-        alert("Your session has expired, please loggin again");
-        navigate("/auth/sign-in");
+    if (!sessionStorage.getItem("hasEffectRunInSession")) {
+      sessionStorage.setItem("hasEffectRunInSession", false);
+    }
+    if (!hasEffectRunInSession) {
+      if (tokens) {
+        const u = jwtDecode(tokens);
+        if (u.exp < currentTime) {
+          alert("Your session has expired, please log in again");
+          navigate("/auth/sign-in");
+          setAuthTokens(null);
+          setUser(null);
+          localStorage.removeItem("authTokens");
+        } else {
+          updateToken();
+        }
+      } else {
         setAuthTokens(null);
         setUser(null);
-        localStorage.removeItem("authTokens");
-      } else {
-        console.log(authTokens.refresh);
-        /*fetch("http://127.0.0.1:8000/api/token/refresh/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ refresh: authTokens.refresh }),
-        })
-          .then((res) => {
-            if (res.status == 200) {
-              return res.json();
-            } else logoutUser();
-          })
-          .then((data) => {
-            setAuthTokens(data);
-            setUser(jwtDecode(data.access));
-            localStorage.setItem("authTokens", JSON.stringify(data));
-          })
-          .catch((err) => {
-            console.log(err);
-          });*/
-        setAuthTokens(tokens);
-        setUser(jwtDecode(tokens));
-        const fechData = async () =>{
-          const response = await fetch("http://127.0.0.1:8000/api/token/refresh/", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ refresh: authTokens.refresh }),
-          });
-          if(response.ok){
-            const data = await response.json();
-            setAuthTokens(data);
-            setUser(jwtDecode(data.access));
-            localStorage.setItem("authTokens", JSON.stringify(data));
-          }else{
-            logoutUser();
-          }
-        }
-        fechData();
       }
-    } else {
-      setAuthTokens(null);
-      setUser(null);
+  
+      // Set the flag to indicate the effect has run in the current session
+      sessionStorage.setItem("hasEffectRunInSession", true);
     }
   }, []);
+
+  // useEffect(() => {
+  //   const tokens = localStorage.getItem("authTokens")
+  //   const currentTime = Date.now() / 1000;
+  //   if (tokens) {
+  //     const u = jwtDecode(tokens);
+  //     if (u.exp < currentTime) {
+  //       alert("Your session has expired, please loggin again");
+  //       navigate("/auth/sign-in");
+  //       setAuthTokens(null);
+  //       setUser(null);
+  //       localStorage.removeItem("authTokens");
+  //     } else {
+  //       updateToken();
+  //     }
+  //   } else {
+  //     setAuthTokens(null);
+  //     setUser(null);
+  //   }
+  // }, []);
 
   useEffect(() => {
     const REFRESH_INTERVAL = 1000 * 60 * 4; // 4 minutes
