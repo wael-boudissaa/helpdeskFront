@@ -1,3 +1,4 @@
+import AuthContext from "@/context/AuthContext";
 import {
   Card,
   CardHeader,
@@ -6,10 +7,24 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import PropTypes from "prop-types";
+import { useContext } from "react";
 
-export function StatisticsCard({ color, icon, title, value, footer, switchTable }) {
+export function StatisticsCard({
+  color,
+  icon,
+  title,
+  value,
+  footer,
+  switchTable,
+}) {
+  const {user} = useContext(AuthContext);
   return (
-    <Card onClick={()=>switchTable(title)} className="cursor-pointer hover:scale-105 transition-all">
+        <Card
+      onClick={() => switchTable(title)}
+      className={`cursor-pointer transition-all hover:scale-105 ${
+        ((user.type !== "admin") && (title === "Archived Tickets")) && "hidden"
+      }`}
+    >
       <CardHeader
         variant="gradient"
         color={color}

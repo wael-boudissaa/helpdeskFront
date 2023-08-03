@@ -7,24 +7,41 @@ import {
   Chip,
   Tooltip,
   Progress,
+  IconButton,
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { authorsTableData, projectsTableData } from "@/data";
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "@/context/AuthContext";
 import { useMaterialTailwindController } from "@/context";
+import {
+  EnvelopeIcon,
+  TrashIcon,
+  PaperAirplaneIcon,
+  CheckIcon,
+  PlusCircleIcon,
+} from "@heroicons/react/24/solid";
+import { AddTickets } from "@/widgets/pop-ups/AddTickets";
 
 export function Tables(props) {
   const selectedTable = props.selectedTable;
+  const setHomeTickets = props.setHomeTickets;
   const { user, authTokens } = useContext(AuthContext);
   const [tickets, setTickets] = useState([]);
+  const [filtredTickets, setFilteredTickets] = useState([]);
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavColor } = controller;
-
+  const typeUser = () => {
+    if (user.type == "expert") {
+      return "applicant";
+    }
+    return "expert";
+  };
+  const [open, setOpen] = useState(false)
+  const handleOpen = () => setOpen(!open);
   useEffect(() => {
     const fetchData = async () => {
       const authorization = "Bearer " + authTokens.access;
-      //alert(authorization);
       const requestOptions = {
         method: "GET",
         headers: {
@@ -39,6 +56,7 @@ export function Tables(props) {
         if (response.ok) {
           const data = await response.json();
           setTickets(data);
+          setHomeTickets(data);
         } else {
           console.log("Failed to fetch");
         }
@@ -49,116 +67,39 @@ export function Tables(props) {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    let list = [];
+    let condition = "";
+    if (selectedTable === "Validated Tickets") condition = "validated";
+    else if (selectedTable === "Waiting Tickets") condition = "waiting";
+    else condition = "archived";
+    for (let t of tickets) {
+      if (t.etat === condition) list.push(t);
+    }
+    setFilteredTickets(list);
+  }, [tickets, selectedTable]);
+
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
       <Card>
-        <CardHeader variant="gradient" color={sidenavColor} className="mb-8 p-6">
+        <CardHeader
+          variant="gradient"
+          color={sidenavColor}
+          className="mb-8 p-6 flex flex-row justify-between"
+        >
           <Typography variant="h6" color="white">
-            {selectedTable
-              ? "Validated Tickets Table"
-              : "Waiting Tickets Table"}
+            {selectedTable}
           </Typography>
+          {(user.type==="applicant")&&(selectedTable==="Waiting Tickets")&&<IconButton variant="text" color="blue-gray" onClick={handleOpen}>
+            <PlusCircleIcon className="h-7 w-7 text-white" />
+          </IconButton>}
         </CardHeader>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-          <table className="w-full min-w-[640px] table-auto">
-            <thead>
-              <tr>
-                {["Expert", "categorie", "issue", "Date", ""].map((el) => (
-                  <th
-                    key={el}
-                    className="border-b border-blue-gray-50 py-3 px-5 text-left"
-                  >
-                    <Typography
-                      variant="small"
-                      className="text-[11px] font-bold uppercase text-blue-gray-400"
-                    >
-                      {el}
-                    </Typography>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {tickets.map(
-                ({ expertName, category, issue, creationDate, expertJob }, key) => {
-                  const className = `py-3 px-5 ${
-                    key === tickets.length - 1
-                      ? ""
-                      : "border-b border-blue-gray-50"
-                  }`;
-
-                  return (
-                    <tr key={expertName}>
-                      <td className={className}>
-                        <div className="flex items-center gap-4">
-                          {/* <Avatar src={img} alt={name} size="sm" /> */}
-                          <div>
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-semibold"
-                            >
-                              {expertName}
-                            </Typography>
-                            <Typography className="text-xs font-normal text-blue-gray-500">
-                              {expertJob}
-                            </Typography>
-                          </div>
-                        </div>
-                      </td>
-                      <td className={className}>
-                        <Typography className="text-xs font-semibold text-blue-gray-600">
-                          {category}
-                        </Typography>
-                        {/* <Typography className="text-xs font-normal text-blue-gray-500">
-                          {job[1]}
-                        </Typography> */}
-                      </td>
-                      <td className={className}>
-                        <Typography className="text-xs font-semibold text-blue-gray-600">
-                          {issue}
-                        </Typography>
-                        {/* <Chip
-                          variant="gradient"
-                          color={online ? "green" : "blue-gray"}
-                          value={online ? "online" : "offline"}
-                          className="py-0.5 px-2 text-[11px] font-medium"
-                        /> */}
-                      </td>
-                      <td className={className}>
-                        <Typography className="text-xs font-semibold text-blue-gray-600">
-                          {creationDate}
-                        </Typography>
-                      </td>
-                      <td className={className}>
-                        <Typography
-                          as="a"
-                          href="#"
-                          className="text-xs font-semibold text-blue-gray-600"
-                        >
-                          Edit
-                        </Typography>
-                      </td>
-                    </tr>
-                  );
-                }
-              )}
-            </tbody>
-          </table>
-        </CardBody>
-      </Card>
-      {/* <Card>
-        <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
-          <Typography variant="h6" color="white">
-            Projects Table
-          </Typography>
-        </CardHeader>
-        <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-          <table className="w-full min-w-[640px] table-auto">
-            <thead>
-              <tr>
-                {["companies", "members", "budget", "completion", ""].map(
-                  (el) => (
+          {user.type !== "admin" ? (
+            <table className="w-full min-w-[640px] table-auto">
+              <thead>
+                <tr>
+                  {[typeUser(), "categorie", "issue", "Date", ""].map((el) => (
                     <th
                       key={el}
                       className="border-b border-blue-gray-50 py-3 px-5 text-left"
@@ -170,92 +111,207 @@ export function Tables(props) {
                         {el}
                       </Typography>
                     </th>
-                  )
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {projectsTableData.map(
-                ({ img, name, members, budget, completion }, key) => {
-                  const className = `py-3 px-5 ${
-                    key === projectsTableData.length - 1
-                      ? ""
-                      : "border-b border-blue-gray-50"
-                  }`;
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtredTickets.map(
+                  (
+                    { username, category, issue, creationDate, jobtitle },
+                    key
+                  ) => {
+                    const className = `py-3 px-5 ${
+                      key === tickets.length - 1
+                        ? ""
+                        : "border-b border-blue-gray-50"
+                    }`;
 
-                  return (
-                    <tr key={name}>
-                      <td className={className}>
-                        <div className="flex items-center gap-4">
-                          <Avatar src={img} alt={name} size="sm" />
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-bold"
-                          >
-                            {name}
+                    return (
+                      <tr key={username}>
+                        <td className={className}>
+                          <div className="flex items-center gap-4">
+                            <div>
+                              <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-semibold"
+                              >
+                                {username}
+                              </Typography>
+                              <Typography className="text-xs font-normal text-blue-gray-500">
+                                {jobtitle}
+                              </Typography>
+                            </div>
+                          </div>
+                        </td>
+                        <td className={className}>
+                          <Typography className="text-xs font-semibold text-blue-gray-600">
+                            {category}
                           </Typography>
-                        </div>
-                      </td>
-                      <td className={className}>
-                        {members.map(({ img, name }, key) => (
-                          <Tooltip key={name} content={name}>
-                            <Avatar
-                              src={img}
-                              alt={name}
-                              size="xs"
-                              variant="circular"
-                              className={`cursor-pointer border-2 border-white ${
-                                key === 0 ? "" : "-ml-2.5"
-                              }`}
-                            />
-                          </Tooltip>
-                        ))}
-                      </td>
-                      <td className={className}>
-                        <Typography
-                          variant="small"
-                          className="text-xs font-medium text-blue-gray-600"
-                        >
-                          {budget}
-                        </Typography>
-                      </td>
-                      <td className={className}>
-                        <div className="w-10/12">
-                          <Typography
-                            variant="small"
-                            className="mb-1 block text-xs font-medium text-blue-gray-600"
-                          >
-                            {completion}%
+                        </td>
+                        <td className={className}>
+                          <Typography className="text-xs font-semibold text-blue-gray-600">
+                            {issue}
                           </Typography>
-                          <Progress
-                            value={completion}
-                            variant="gradient"
-                            color={completion === 100 ? "green" : "blue"}
-                            className="h-1"
-                          />
-                        </div>
-                      </td>
-                      <td className={className}>
-                        <Typography
-                          as="a"
-                          href="#"
-                          className="text-xs font-semibold text-blue-gray-600"
-                        >
-                          <EllipsisVerticalIcon
-                            strokeWidth={2}
-                            className="h-5 w-5 text-inherit"
-                          />
-                        </Typography>
-                      </td>
-                    </tr>
-                  );
-                }
-              )}
-            </tbody>
-          </table>
+                        </td>
+                        <td className={className}>
+                          <Typography className="text-xs font-semibold text-blue-gray-600">
+                            {creationDate}
+                          </Typography>
+                        </td>
+                        <td className={className}>
+                          <IconButton variant="text" color="blue-gray">
+                            <EnvelopeIcon className="h-5 w-5 text-blue-300" />
+                          </IconButton>
+
+                          {user.type === "admin" && (
+                            <IconButton variant="text" color="blue-gray">
+                              <PaperAirplaneIcon className="text-black-300 h-5 w-5" />
+                            </IconButton>
+                          )}
+                          {user.type === "expert" && (
+                            <IconButton variant="text" color="blue-gray">
+                              <CheckIcon className="h-5 w-5 text-green-300" />
+                            </IconButton>
+                          )}
+                          {user.type === "admin" && (
+                            <IconButton variant="text" color="blue-gray">
+                              <TrashIcon className="h-5 w-5 text-red-300" />
+                            </IconButton>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  }
+                )}
+              </tbody>
+            </table>
+          ) : (
+            <table className="w-full min-w-[640px] table-auto">
+              <thead>
+                <tr>
+                  {[
+                    "Expert",
+                    "applicant",
+                    "categorie",
+                    "issue",
+                    "Date",
+                    "",
+                  ].map((el) => (
+                    <th
+                      key={el}
+                      className="border-b border-blue-gray-50 py-3 px-5 text-left"
+                    >
+                      <Typography
+                        variant="small"
+                        className="text-[11px] font-bold uppercase text-blue-gray-400"
+                      >
+                        {el}
+                      </Typography>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtredTickets.map(
+                  (
+                    {
+                      username,
+                      category,
+                      issue,
+                      creationDate,
+                      jobtitle,
+                      expertname,
+                      expertjob,
+                    },
+                    key
+                  ) => {
+                    const className = `py-3 px-5 ${
+                      key === tickets.length - 1
+                        ? ""
+                        : "border-b border-blue-gray-50"
+                    }`;
+
+                    return (
+                      <tr key={username}>
+                        <td className={className}>
+                          <div className="flex items-center gap-4">
+                            {/* <Avatar src={img} alt={name} size="sm" /> */}
+                            <div>
+                              <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-semibold"
+                              >
+                                {expertname}
+                              </Typography>
+                              <Typography className="text-xs font-normal text-blue-gray-500">
+                                {expertjob}
+                              </Typography>
+                            </div>
+                          </div>
+                        </td>
+                        <td className={className}>
+                          <div className="flex items-center gap-4">
+                            <div>
+                              <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-semibold"
+                              >
+                                {username}
+                              </Typography>
+                              <Typography className="text-xs font-normal text-blue-gray-500">
+                                {jobtitle}
+                              </Typography>
+                            </div>
+                          </div>
+                        </td>
+                        <td className={className}>
+                          <Typography className="text-xs font-semibold text-blue-gray-600">
+                            {category}
+                          </Typography>
+                        </td>
+                        <td className={className}>
+                          <Typography className="text-xs font-semibold text-blue-gray-600">
+                            {issue}
+                          </Typography>
+                        </td>
+                        <td className={className}>
+                          <Typography className="text-xs font-semibold text-blue-gray-600">
+                            {creationDate}
+                          </Typography>
+                        </td>
+                        <td className={className}>
+                          <IconButton variant="text" color="blue-gray">
+                            <EnvelopeIcon className="h-5 w-5 text-blue-300" />
+                          </IconButton>
+                          {user.type === "admin" && (
+                            <IconButton variant="text" color="blue-gray">
+                              <PaperAirplaneIcon className="text-black-300 h-5 w-5" />
+                            </IconButton>
+                          )}
+                          {user.type === "expert" && (
+                            <IconButton variant="text" color="blue-gray">
+                              <CheckIcon className="h-5 w-5 text-green-300" />
+                            </IconButton>
+                          )}
+                          {user.type === "admin" && (
+                            <IconButton variant="text" color="blue-gray">
+                              <TrashIcon className="h-5 w-5 text-red-300" />
+                            </IconButton>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  }
+                )}
+              </tbody>
+            </table>
+          )}
         </CardBody>
-      </Card> */}
+      </Card>
+      <AddTickets open={open} handleOpen={handleOpen}/>
     </div>
   );
 }

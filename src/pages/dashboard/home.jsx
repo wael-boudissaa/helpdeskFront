@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Typography,
   Card,
@@ -28,13 +28,54 @@ import {
   ordersOverviewData,
 } from "@/data";
 import { Tables } from ".";
+import AuthContext from "@/context/AuthContext";
 
 export function Home() {
-  const [selectedTable,setSelectedTable]=useState(false);
-  const switchTable =(title)=> {
-    if (title==="Validated Tickets") setSelectedTable(true)
-    else setSelectedTable(false)
-  }
+  const [selectedTable, setSelectedTable] = useState("Waiting Tickets");
+  
+  const { user } = useContext(AuthContext);
+  const [tickets, setTickets] = useState([]);
+  const [statistics, setStatistics] = useState({
+    nbArchive: 0,
+    nbValide: 0,
+    nbWaiting: 0,
+    prValide: 0,
+    prWaiting: 0,
+    prArchive: 0,
+  });
+  const switchTable = (title) => {
+    setSelectedTable(title);
+  };
+  
+
+  const setHomeTickets = (tickets) => {
+    setTickets(tickets);
+  };
+  useEffect(() => {
+    let nbA = 0;
+    let nbV = 0;
+    let nbW = 0;
+    let nbTickets = tickets.length;
+
+    for (let t of tickets) {
+      if (t.etat === "waiting") nbW++;
+      if (t.etat === "archived") nbA++;
+      if (t.etat === "validated") nbV++;
+    }
+    if (user.type!=="admin") nbTickets -= nbA;
+    let prV = ((nbV / nbTickets)*100).toFixed(2);
+    let prW = ((nbW / nbTickets) * 100).toFixed(2);
+    let prA = ((nbA / nbTickets) * 100).toFixed(2);
+
+    setStatistics({
+      nbArchive: nbA,
+      nbValide: nbV,
+      nbWaiting: nbW,
+      prValide: prV,
+      prWaiting: prW,
+      prArchive: prA,
+    });
+  }, [tickets]);
   return (
     <div className="mt-12">
       <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
@@ -42,21 +83,34 @@ export function Home() {
           <StatisticsCard
             key={title}
             {...rest}
+            value={
+              title === "Validated Tickets"
+                ? statistics.nbValide
+                : title === "Waiting Tickets"
+                ? statistics.nbWaiting
+                : statistics.nbArchive
+            }
             switchTable={switchTable}
             title={title}
             icon={React.createElement(icon, {
-              className: "w-6 h-6 text-white",
+              className: `w-6 h-6 text-white`,
             })}
             footer={
               <Typography className="font-normal text-blue-gray-600">
-                <strong className={footer.color}>{footer.value /* dynamyc */}</strong>
+                <strong className={footer.color}>
+                {title === "Validated Tickets"
+                ? statistics.prValide 
+                : title === "Waiting Tickets"
+                ? statistics.prWaiting
+                : statistics.prArchive}%
+                </strong>
                 &nbsp;{footer.label}
               </Typography>
             }
           />
         ))}
       </div>
-      <Tables selectedTable={selectedTable}/>
+      <Tables selectedTable={selectedTable} setHomeTickets={setHomeTickets} />
       {/* <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
         {statisticsChartsData.map((props) => (
           <StatisticsChart
