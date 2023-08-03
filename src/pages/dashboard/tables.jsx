@@ -65,11 +65,12 @@ export function Tables(props) {
       }
     };
     fetchData();
-  }, []);
+  }, [authTokens, open]);
 
   useEffect(() => {
     let list = [];
     let condition = "";
+    console.log(tickets);
     if (selectedTable === "Validated Tickets") condition = "validated";
     else if (selectedTable === "Waiting Tickets") condition = "waiting";
     else condition = "archived";
@@ -127,7 +128,7 @@ export function Tables(props) {
                     }`;
 
                     return (
-                      <tr key={username}>
+                      <tr>
                         <td className={className}>
                           <div className="flex items-center gap-4">
                             <div>

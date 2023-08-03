@@ -32,7 +32,6 @@ import AuthContext from "@/context/AuthContext";
 
 export function Home() {
   const [selectedTable, setSelectedTable] = useState("Waiting Tickets");
-  
   const { user } = useContext(AuthContext);
   const [tickets, setTickets] = useState([]);
   const [statistics, setStatistics] = useState({

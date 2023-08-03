@@ -72,6 +72,25 @@ export const AuthProvider = ({ children }) => {
     navigate("/auth/sign-in");
   };
 
+  // const checkTokenStatus = async (refreshToken) => {
+  //   try {
+  //     const response = await fetch(
+  //       "http://127.0.0.1:8000/api/token/check-refresh-token/",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           refresh: refreshToken,
+  //         }),
+  //       }
+  //     );
+  //     return response.data.blacklisted;
+  //   } catch (error) {
+  //     console.error("Error checking token status:", error);
+  //   }
+  // };
   const updateToken = async () => {
     const response = await fetch("http://127.0.0.1:8000/api/token/refresh/", {
       method: "POST",
@@ -101,11 +120,13 @@ export const AuthProvider = ({ children }) => {
     show: show,
     loginUser: loginUser,
     logoutUser: logoutUser,
-  };                                                               
+  };
 
   useEffect(() => {
     // Check if the flag for the current session exists
-    const hasEffectRunInSession = sessionStorage.getItem("hasEffectRunInSession");
+    const hasEffectRunInSession = sessionStorage.getItem(
+      "hasEffectRunInSession"
+    );
     const tokens = localStorage.getItem("authTokens");
     const currentTime = Date.now() / 1000;
     if (!sessionStorage.getItem("hasEffectRunInSession")) {
@@ -113,12 +134,12 @@ export const AuthProvider = ({ children }) => {
     }
     if (!hasEffectRunInSession) {
       if (tokens) {
-        const t = JSON.parse(tokens)
+        const t = JSON.parse(tokens);
         const u = jwtDecode(t.refresh);
-        if (u.exp < currentTime) {
+        if ((u.exp < currentTime)) {
           alert("Your session has expired, please log in again");
           navigate("/auth/sign-in");
-          setAuthTokens(null);
+          -setAuthTokens(null);
           setUser(null);
           localStorage.removeItem("authTokens");
         } else {
@@ -128,7 +149,7 @@ export const AuthProvider = ({ children }) => {
         setAuthTokens(null);
         setUser(null);
       }
-  
+
       // Set the flag to indicate the effect has run in the current session
       sessionStorage.setItem("hasEffectRunInSession", true);
     }
