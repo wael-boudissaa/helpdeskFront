@@ -37,7 +37,7 @@ export function Tables(props) {
     }
     return "expert";
   };
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(!open);
   useEffect(() => {
     const fetchData = async () => {
@@ -86,14 +86,16 @@ export function Tables(props) {
         <CardHeader
           variant="gradient"
           color={sidenavColor}
-          className="mb-8 p-6 flex flex-row justify-between"
+          className="mb-8 flex flex-row justify-between p-6"
         >
           <Typography variant="h6" color="white">
             {selectedTable}
           </Typography>
-          {(user.type==="applicant")&&(selectedTable==="Waiting Tickets")&&<IconButton variant="text" color="blue-gray" onClick={handleOpen}>
-            <PlusCircleIcon className="h-7 w-7 text-white" />
-          </IconButton>}
+          {user.type === "applicant" && selectedTable === "Waiting Tickets" && (
+            <IconButton variant="text" color="blue-gray" onClick={handleOpen}>
+              <PlusCircleIcon className="h-7 w-7 text-white" />
+            </IconButton>
+          )}
         </CardHeader>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
           {user.type !== "admin" ? (
@@ -284,23 +286,43 @@ export function Tables(props) {
                           </Typography>
                         </td>
                         <td className={className}>
-                          <IconButton variant="text" color="blue-gray">
-                            <EnvelopeIcon className="h-5 w-5 text-blue-300" />
-                          </IconButton>
+                          <Tooltip
+                            content="Check Discussion"
+                            animate={{
+                              mount: { scale: 1, y: 0 },
+                              unmount: { scale: 0, y: 25 },
+                            }}
+                          >
+                            <IconButton variant="text" color="blue-gray">
+                              <EnvelopeIcon className="h-5 w-5 text-blue-300" />
+                            </IconButton>
+                          </Tooltip>
+
                           {user.type === "admin" && (
-                            <IconButton variant="text" color="blue-gray">
-                              <PaperAirplaneIcon className="text-black-300 h-5 w-5" />
-                            </IconButton>
-                          )}
-                          {user.type === "expert" && (
-                            <IconButton variant="text" color="blue-gray">
-                              <CheckIcon className="h-5 w-5 text-green-300" />
-                            </IconButton>
+                            <Tooltip
+                              content="Transfert to Expert"
+                              animate={{
+                                mount: { scale: 1, y: 0 },
+                                unmount: { scale: 0, y: 25 },
+                              }}
+                            >
+                              <IconButton variant="text" color="blue-gray">
+                                <PaperAirplaneIcon className="text-black-300 h-5 w-5" />
+                              </IconButton>
+                            </Tooltip>
                           )}
                           {user.type === "admin" && (
-                            <IconButton variant="text" color="blue-gray">
-                              <TrashIcon className="h-5 w-5 text-red-300" />
-                            </IconButton>
+                            <Tooltip
+                              content="Remove to Archive"
+                              animate={{
+                                mount: { scale: 1, y: 0 },
+                                unmount: { scale: 0, y: 25 },
+                              }}
+                            >
+                              <IconButton variant="text" color="blue-gray">
+                                <TrashIcon className="h-5 w-5 text-red-300" />
+                              </IconButton>
+                            </Tooltip>
                           )}
                         </td>
                       </tr>
@@ -312,7 +334,7 @@ export function Tables(props) {
           )}
         </CardBody>
       </Card>
-      <AddTickets open={open} handleOpen={handleOpen}/>
+      <AddTickets open={open} handleOpen={handleOpen} />
     </div>
   );
 }
