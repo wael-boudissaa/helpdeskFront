@@ -176,7 +176,7 @@ export const AuthProvider = ({ children }) => {
   // }, []);
 
   useEffect(() => {
-    const REFRESH_INTERVAL = 1000 * 60 * 58; // 60 minutes
+    const REFRESH_INTERVAL = 1000 * 60 * 60; // 60 minutes
     let interval = setInterval(() => {
       if (authTokens) {
         updateToken();

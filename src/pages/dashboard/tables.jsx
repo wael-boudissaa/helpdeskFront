@@ -3,11 +3,14 @@ import {
   CardHeader,
   CardBody,
   Typography,
-  Avatar,
-  Chip,
   Tooltip,
   Progress,
   IconButton,
+  Menu,
+  MenuHandler,
+  MenuList,
+  MenuItem,
+  Avatar,
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { authorsTableData, projectsTableData } from "@/data";
@@ -23,6 +26,25 @@ import {
 } from "@heroicons/react/24/solid";
 import { AddTickets } from "@/widgets/pop-ups/AddTickets";
 
+function ClockIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className="h-3 w-3"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    </svg>
+  );
+}
+
 export function Tables(props) {
   const selectedTable = props.selectedTable;
   const setHomeTickets = props.setHomeTickets;
@@ -31,6 +53,28 @@ export function Tables(props) {
   const [filtredTickets, setFilteredTickets] = useState([]);
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavColor } = controller;
+  const experts = [
+    {
+      first_name: "Boudissa",
+      second_name: "Wael",
+      domaine_expertise: "IT support",
+    },
+    {
+      first_name: "Dupont",
+      second_name: "Sophie",
+      domaine_expertise: "Marketing",
+    },
+    {
+      first_name: "Lefebvre",
+      second_name: "Pierre",
+      domaine_expertise: "Finance",
+    },
+    {
+      first_name: "Martin",
+      second_name: "Julie",
+      domaine_expertise: "Human Resources",
+    },
+  ];
   const typeUser = () => {
     if (user.type == "expert") {
       return "applicant";
@@ -39,6 +83,21 @@ export function Tables(props) {
   };
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(!open);
+  
+  const adjustDate = (isoDate) =>{
+    const options = { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit', 
+      timeZoneName: 'short' 
+    };
+    const date = new Date(isoDate);
+    return date.toLocaleDateString('en-US', options);
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       const authorization = "Bearer " + authTokens.access;
@@ -159,27 +218,16 @@ export function Tables(props) {
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {creationDate}
+                            {adjustDate(creationDate)}
                           </Typography>
                         </td>
                         <td className={className}>
                           <IconButton variant="text" color="blue-gray">
                             <EnvelopeIcon className="h-5 w-5 text-blue-300" />
                           </IconButton>
-
-                          {user.type === "admin" && (
-                            <IconButton variant="text" color="blue-gray">
-                              <PaperAirplaneIcon className="text-black-300 h-5 w-5" />
-                            </IconButton>
-                          )}
                           {user.type === "expert" && (
                             <IconButton variant="text" color="blue-gray">
                               <CheckIcon className="h-5 w-5 text-green-300" />
-                            </IconButton>
-                          )}
-                          {user.type === "admin" && (
-                            <IconButton variant="text" color="blue-gray">
-                              <TrashIcon className="h-5 w-5 text-red-300" />
                             </IconButton>
                           )}
                         </td>
@@ -222,6 +270,7 @@ export function Tables(props) {
                       username,
                       category,
                       issue,
+                      etat,
                       creationDate,
                       jobtitle,
                       expertname,
@@ -236,7 +285,7 @@ export function Tables(props) {
                     }`;
 
                     return (
-                      <tr key={username}>
+                      <tr >
                         <td className={className}>
                           <div className="flex items-center gap-4">
                             {/* <Avatar src={img} alt={name} size="sm" /> */}
@@ -282,7 +331,7 @@ export function Tables(props) {
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {creationDate}
+                            {adjustDate(creationDate)}
                           </Typography>
                         </td>
                         <td className={className}>
@@ -298,20 +347,50 @@ export function Tables(props) {
                             </IconButton>
                           </Tooltip>
 
-                          {user.type === "admin" && (
-                            <Tooltip
-                              content="Transfert to Expert"
-                              animate={{
-                                mount: { scale: 1, y: 0 },
-                                unmount: { scale: 0, y: 25 },
-                              }}
-                            >
-                              <IconButton variant="text" color="blue-gray">
-                                <PaperAirplaneIcon className="text-black-300 h-5 w-5" />
-                              </IconButton>
-                            </Tooltip>
+                          {((user.type === "admin") && (expertname === "Ticket not Affected Yet") &&(etat !=="archived")) && (
+                            <Menu>
+                              <MenuHandler>
+                                {/* <Tooltip
+                                  content="Transfert to Expert"
+                                  animate={{
+                                    mount: { scale: 1, y: 0 },
+                                    unmount: { scale: 0, y: 25 },
+                                  }}
+                                > */}
+                                <IconButton variant="text" color="blue-gray">
+                                  <PaperAirplaneIcon className="text-black-300 h-5 w-5" />
+                                </IconButton>
+                                {/* </Tooltip> */}
+                              </MenuHandler>
+                              <MenuList className="menu flex max-h-64 w-72 flex-col gap-2 overflow-auto">
+                                {experts.map((expert) => {
+                                  return (
+                                    <MenuItem className="flex items-center gap-4 py-2 pr-8 pl-2">
+                                      <Avatar
+                                        size="sm"
+                                        variant="circular"
+                                        alt="tania andrew"
+                                        src="https://upload.wikimedia.org/wikipedia/commons/7/7c/User_font_awesome.svg"
+                                      />
+                                      <div className="flex flex-col gap-1">
+                                        <Typography
+                                          variant="small"
+                                          color="gray"
+                                          className="font-normal"
+                                        >
+                                          <p className="font-medium text-blue-gray-900">
+                                            {expert.first_name} {" "} {expert.second_name}
+                                          </p>
+                                          {expert.domaine_expertise}
+                                        </Typography>
+                                      </div>
+                                    </MenuItem>
+                                  );
+                                })}
+                              </MenuList>
+                            </Menu>
                           )}
-                          {user.type === "admin" && (
+                          {((user.type === "admin")&&(etat !=="archived")) && (
                             <Tooltip
                               content="Remove to Archive"
                               animate={{

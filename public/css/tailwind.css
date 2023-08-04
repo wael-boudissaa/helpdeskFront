@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.menu::-webkit-scrollbar {
+    width: 0.5em; /* Adjust the width as needed */
+    scroll-behavior: smooth;
+}
