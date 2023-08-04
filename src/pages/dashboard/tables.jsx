@@ -24,6 +24,7 @@ import {
   CheckIcon,
   PlusCircleIcon,
 } from "@heroicons/react/24/solid";
+import { RemoveTicket } from "@/widgets/pop-ups/RemoveTicket";
 import { AddTickets } from "@/widgets/pop-ups/AddTickets";
 
 function ClockIcon() {
@@ -46,6 +47,7 @@ function ClockIcon() {
 }
 
 export function Tables(props) {
+  const [idTicketSupprime,setIdTicketSupprime]=useState("")
   const selectedTable = props.selectedTable;
   const setHomeTickets = props.setHomeTickets;
   const { user, authTokens } = useContext(AuthContext);
@@ -75,14 +77,34 @@ export function Tables(props) {
       domaine_expertise: "Human Resources",
     },
   ];
+  const [open, setOpen] = useState(false);
+  const [openDeleteSure,setOpenDeleteSure]= useState(false)
+  const handleOpen = () => setOpen(!open);
+  const [executeDelete, setExectueDelete] = useState(false);
+  const handleOpenDeleteSure =()=> setOpenDeleteSure(!openDeleteSure)
   const typeUser = () => {
     if (user.type == "expert") {
       return "applicant";
     }
     return "expert";
   };
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(!open);
+  const DeleteTicket = async (deletedTicket) => {
+    const authorization = "Bearer " + authTokens.access;
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/tickets/${deletedTicket}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: authorization,
+          },
+        }
+      );
+      if (response.ok) {
+        setExectueDelete(!executeDelete);
+      }
+    } catch (err) {
+      console.log(err);
   
   const adjustDate = (isoDate) =>{
     const options = { 
@@ -98,7 +120,10 @@ export function Tables(props) {
     return date.toLocaleDateString('en-US', options);
   }
 
+    }
+  };
   useEffect(() => {
+    console.log(tickets);
     const fetchData = async () => {
       const authorization = "Bearer " + authTokens.access;
       const requestOptions = {
@@ -124,7 +149,7 @@ export function Tables(props) {
       }
     };
     fetchData();
-  }, [authTokens, open]);
+  }, [authTokens, open,executeDelete]);
 
   useEffect(() => {
     let list = [];
@@ -137,6 +162,7 @@ export function Tables(props) {
       if (t.etat === condition) list.push(t);
     }
     setFilteredTickets(list);
+    console.log(filtredTickets);
   }, [tickets, selectedTable]);
 
   return (
@@ -267,6 +293,7 @@ export function Tables(props) {
                 {filtredTickets.map(
                   (
                     {
+                      idTicket,
                       username,
                       category,
                       issue,
@@ -285,7 +312,7 @@ export function Tables(props) {
                     }`;
 
                     return (
-                      <tr >
+                      <tr>
                         <td className={className}>
                           <div className="flex items-center gap-4">
                             {/* <Avatar src={img} alt={name} size="sm" /> */}
@@ -399,7 +426,13 @@ export function Tables(props) {
                               }}
                             >
                               <IconButton variant="text" color="blue-gray">
-                                <TrashIcon className="h-5 w-5 text-red-300" />
+                                <TrashIcon
+                                  onClick={() => {
+                                    handleOpenDeleteSure()
+                                    setIdTicketSupprime(idTicket)
+                                  }}
+                                  className="h-5 w-5 text-red-300"
+                                />
                               </IconButton>
                             </Tooltip>
                           )}
@@ -414,6 +447,7 @@ export function Tables(props) {
         </CardBody>
       </Card>
       <AddTickets open={open} handleOpen={handleOpen} />
+      <RemoveTicket openDeleteSure={openDeleteSure} handleOpenDeleteSure={handleOpenDeleteSure} DeleteTicket= {DeleteTicket} idTicketSupprime={idTicketSupprime}  />
     </div>
   );
 }
