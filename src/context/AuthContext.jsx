@@ -139,7 +139,7 @@ export const AuthProvider = ({ children }) => {
         if ((u.exp < currentTime)) {
           alert("Your session has expired, please log in again");
           navigate("/auth/sign-in");
-          -setAuthTokens(null);
+          setAuthTokens(null);
           setUser(null);
           localStorage.removeItem("authTokens");
         } else {

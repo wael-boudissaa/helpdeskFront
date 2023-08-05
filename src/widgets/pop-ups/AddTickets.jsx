@@ -15,7 +15,7 @@ import AuthContext from "@/context/AuthContext";
 import SnackBar from "../SnackBar";
 
 export function AddTickets({ open, handleOpen }) {
-  const { user, authTokens } = useContext(AuthContext);
+  const { user, authTokens, logoutUser } = useContext(AuthContext);
   const versionOptions = ["Application", "IT Assistance", "Hardware"];
   const priorities = ["High", "Medium", "Low"];
   const [message, setMessage] = useState("");
@@ -79,9 +79,12 @@ export function AddTickets({ open, handleOpen }) {
         setSnackbarMessage("Successfully sent !");
         setShowSnackbar(true);
         setColor("bg-green-300");
+      } else if (response.status == 401) {
+        alert("Your session has expired, please log in again");
+        logoutUser();
       } else {
         const data = await response.json();
-        console.log(data)
+        console.log(data);
         setSnackbarMessage(`${data.msg}`);
         setShowSnackbar(true);
         setColor("bg-red-300");

@@ -26,6 +26,8 @@ import {
 } from "@heroicons/react/24/solid";
 import { RemoveTicket } from "@/widgets/pop-ups/RemoveTicket";
 import { AddTickets } from "@/widgets/pop-ups/AddTickets";
+import { ValidateTicket } from "@/widgets/pop-ups/ValidateTicket";
+import SnackBar from "@/widgets/SnackBar";
 
 function ClockIcon() {
   return (
@@ -47,41 +49,68 @@ function ClockIcon() {
 }
 
 export function Tables(props) {
-  const [idTicketSupprime,setIdTicketSupprime]=useState("")
+  const [idTicketSupprime, setIdTicketSupprime] = useState("");
+  const [idTicketValide, setIdTicketValide] = useState("");
   const selectedTable = props.selectedTable;
   const setHomeTickets = props.setHomeTickets;
-  const { user, authTokens } = useContext(AuthContext);
+  const { user, authTokens, logoutUser } = useContext(AuthContext);
   const [tickets, setTickets] = useState([]);
   const [filtredTickets, setFilteredTickets] = useState([]);
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavColor } = controller;
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [color, setColor] = useState("");
+
+  const handleSnackbarClose = () => {
+    setShowSnackbar(false);
+  };
+  const adjustDate = (isoDate) => {
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      timeZoneName: "short",
+    };
+    const date = new Date(isoDate);
+    return date.toLocaleDateString("en-US", options);
+  };
   const experts = [
     {
       first_name: "Boudissa",
       second_name: "Wael",
       domaine_expertise: "IT support",
+      expert_user_name: "wael",
     },
     {
       first_name: "Dupont",
       second_name: "Sophie",
       domaine_expertise: "Marketing",
+      expert_user_name: "Sofie",
     },
     {
       first_name: "Lefebvre",
       second_name: "Pierre",
       domaine_expertise: "Finance",
+      expert_user_name: "pierre",
     },
     {
       first_name: "Martin",
       second_name: "Julie",
       domaine_expertise: "Human Resources",
+      expert_user_name: "julie",
     },
   ];
   const [open, setOpen] = useState(false);
-  const [openDeleteSure,setOpenDeleteSure]= useState(false)
+  const [openDeleteSure, setOpenDeleteSure] = useState(false);
   const handleOpen = () => setOpen(!open);
-  const [executeDelete, setExectueDelete] = useState(false);
-  const handleOpenDeleteSure =()=> setOpenDeleteSure(!openDeleteSure)
+  const [openValidate, setOpenValidate] = useState(false);
+  const handleOpenValidate = () => setOpenValidate(!openValidate);
+  const [actionHappened, setActionHappened] = useState(false);
+  const handleOpenDeleteSure = () => setOpenDeleteSure(!openDeleteSure);
   const typeUser = () => {
     if (user.type == "expert") {
       return "applicant";
@@ -100,30 +129,91 @@ export function Tables(props) {
           },
         }
       );
+
       if (response.ok) {
-        setExectueDelete(!executeDelete);
+        setActionHappened(!actionHappened);
+        setSnackbarMessage("Successfully removed to archive!");
+        setShowSnackbar(true);
+        setColor("bg-green-300");
+      }
+      else if(response.status == 401){
+        alert("Your session has expired, please log in again");
+        logoutUser();
       }
     } catch (err) {
       console.log(err);
-  
-  const adjustDate = (isoDate) =>{
-    const options = { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit', 
-      timeZoneName: 'short' 
-    };
-    const date = new Date(isoDate);
-    return date.toLocaleDateString('en-US', options);
-  }
-
+      setSnackbarMessage(err);
+      setShowSnackbar(true);
+      setColor("bg-red-300");
     }
   };
+
+  const affectTicket = async (idTicket, expert_user_name) => {
+    const authorization = "Bearer " + authTokens.access;
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/tickets/${idTicket}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: authorization,
+          },
+          body: JSON.stringify({
+            expertId: expert_user_name,
+          }),
+        }
+      );
+      if (response.ok) {
+        setActionHappened(!actionHappened);
+        setSnackbarMessage("Successfully affected !");
+        setShowSnackbar(true);
+        setColor("bg-green-300");
+      }
+      else if(response.status == 401){
+        alert("Your session has expired, please log in again");
+        logoutUser();
+      }
+    } catch (err) {
+      console.log(err);
+      setSnackbarMessage(err);
+      setShowSnackbar(true);
+      setColor("bg-red-300");
+    }
+  };
+
+  const validateTicket = async (idTicket) => {
+    const authorization = "Bearer " + authTokens.access;
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/tickets/${idTicket}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: authorization,
+          },
+        }
+      );
+      if (response.ok) {
+        setActionHappened(!actionHappened);
+        setSnackbarMessage("Successfully Validzated !");
+        setShowSnackbar(true);
+        setColor("bg-green-300");
+      }
+      else if(response.status == 401){
+        alert("Your session has expired, please log in again");
+        logoutUser();
+      }
+    } catch (err) {
+      console.log(err);
+      setSnackbarMessage(err);
+      setShowSnackbar(true);
+      setColor("bg-red-300");
+    }
+  };
+
   useEffect(() => {
-    console.log(tickets);
     const fetchData = async () => {
       const authorization = "Bearer " + authTokens.access;
       const requestOptions = {
@@ -149,12 +239,11 @@ export function Tables(props) {
       }
     };
     fetchData();
-  }, [authTokens, open,executeDelete]);
+  }, [authTokens, open, actionHappened]);
 
   useEffect(() => {
     let list = [];
     let condition = "";
-    console.log(tickets);
     if (selectedTable === "Validated Tickets") condition = "validated";
     else if (selectedTable === "Waiting Tickets") condition = "waiting";
     else condition = "archived";
@@ -177,9 +266,17 @@ export function Tables(props) {
             {selectedTable}
           </Typography>
           {user.type === "applicant" && selectedTable === "Waiting Tickets" && (
-            <IconButton variant="text" color="blue-gray" onClick={handleOpen}>
-              <PlusCircleIcon className="h-7 w-7 text-white" />
-            </IconButton>
+            <Tooltip
+              content="Add a Ticket"
+              animate={{
+                mount: { scale: 1, y: 0 },
+                unmount: { scale: 0, y: 25 },
+              }}
+            >
+              <IconButton variant="text" color="blue-gray" onClick={handleOpen}>
+                <PlusCircleIcon className="h-7 w-7 text-white" />
+              </IconButton>
+            </Tooltip>
           )}
         </CardHeader>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
@@ -205,7 +302,14 @@ export function Tables(props) {
               <tbody>
                 {filtredTickets.map(
                   (
-                    { username, category, issue, creationDate, jobtitle },
+                    {
+                      username,
+                      category,
+                      issue,
+                      creationDate,
+                      jobtitle,
+                      idTicket,
+                    },
                     key
                   ) => {
                     const className = `py-3 px-5 ${
@@ -248,13 +352,36 @@ export function Tables(props) {
                           </Typography>
                         </td>
                         <td className={className}>
-                          <IconButton variant="text" color="blue-gray">
-                            <EnvelopeIcon className="h-5 w-5 text-blue-300" />
-                          </IconButton>
-                          {user.type === "expert" && (
+                          <Tooltip
+                            content="Check Discussion"
+                            animate={{
+                              mount: { scale: 1, y: 0 },
+                              unmount: { scale: 0, y: 25 },
+                            }}
+                          >
                             <IconButton variant="text" color="blue-gray">
-                              <CheckIcon className="h-5 w-5 text-green-300" />
+                              <EnvelopeIcon className="h-5 w-5 text-blue-300" />
                             </IconButton>
+                          </Tooltip>
+                          {user.type === "expert" && (
+                            <Tooltip
+                              content="Validate The Ticket"
+                              animate={{
+                                mount: { scale: 1, y: 0 },
+                                unmount: { scale: 0, y: 25 },
+                              }}
+                            >
+                              <IconButton
+                                onClick={() => {
+                                  handleOpenValidate();
+                                  setIdTicketValide(idTicket);
+                                }}
+                                variant="text"
+                                color="blue-gray"
+                              >
+                                <CheckIcon className="h-5 w-5 text-green-300" />
+                              </IconButton>
+                            </Tooltip>
                           )}
                         </td>
                       </tr>
@@ -374,7 +501,7 @@ export function Tables(props) {
                             </IconButton>
                           </Tooltip>
 
-                          {((user.type === "admin") && (expertname === "Ticket not Affected Yet") &&(etat !=="archived")) && (
+                          {user.type === "admin" && etat === "waiting" && (
                             <Menu>
                               <MenuHandler>
                                 {/* <Tooltip
@@ -392,7 +519,15 @@ export function Tables(props) {
                               <MenuList className="menu flex max-h-64 w-72 flex-col gap-2 overflow-auto">
                                 {experts.map((expert) => {
                                   return (
-                                    <MenuItem className="flex items-center gap-4 py-2 pr-8 pl-2">
+                                    <MenuItem
+                                      onClick={() => {
+                                        affectTicket(
+                                          idTicket,
+                                          expert.expert_user_name
+                                        );
+                                      }}
+                                      className="flex items-center gap-4 py-2 pr-8 pl-2"
+                                    >
                                       <Avatar
                                         size="sm"
                                         variant="circular"
@@ -406,7 +541,8 @@ export function Tables(props) {
                                           className="font-normal"
                                         >
                                           <p className="font-medium text-blue-gray-900">
-                                            {expert.first_name} {" "} {expert.second_name}
+                                            {expert.first_name}{" "}
+                                            {expert.second_name}
                                           </p>
                                           {expert.domaine_expertise}
                                         </Typography>
@@ -417,7 +553,7 @@ export function Tables(props) {
                               </MenuList>
                             </Menu>
                           )}
-                          {((user.type === "admin")&&(etat !=="archived")) && (
+                          {user.type === "admin" && etat !== "archived" && (
                             <Tooltip
                               content="Remove to Archive"
                               animate={{
@@ -428,8 +564,8 @@ export function Tables(props) {
                               <IconButton variant="text" color="blue-gray">
                                 <TrashIcon
                                   onClick={() => {
-                                    handleOpenDeleteSure()
-                                    setIdTicketSupprime(idTicket)
+                                    handleOpenDeleteSure();
+                                    setIdTicketSupprime(idTicket);
                                   }}
                                   className="h-5 w-5 text-red-300"
                                 />
@@ -447,7 +583,25 @@ export function Tables(props) {
         </CardBody>
       </Card>
       <AddTickets open={open} handleOpen={handleOpen} />
-      <RemoveTicket openDeleteSure={openDeleteSure} handleOpenDeleteSure={handleOpenDeleteSure} DeleteTicket= {DeleteTicket} idTicketSupprime={idTicketSupprime}  />
+      <RemoveTicket
+        openDeleteSure={openDeleteSure}
+        handleOpenDeleteSure={handleOpenDeleteSure}
+        DeleteTicket={DeleteTicket}
+        idTicketSupprime={idTicketSupprime}
+      />
+      {showSnackbar && (
+        <SnackBar
+          color={color}
+          snackbarMessage={snackbarMessage}
+          closeSnackBar={handleSnackbarClose}
+        />
+      )}
+      <ValidateTicket
+        openValidate={openValidate}
+        handleOpenValidate={handleOpenValidate}
+        validateTicket={validateTicket}
+        idTicket={idTicketValide}
+      />
     </div>
   );
 }
