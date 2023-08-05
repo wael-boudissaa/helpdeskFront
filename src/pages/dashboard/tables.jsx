@@ -135,8 +135,7 @@ export function Tables(props) {
         setSnackbarMessage("Successfully removed to archive!");
         setShowSnackbar(true);
         setColor("bg-green-300");
-      }
-      else if(response.status == 401){
+      } else if (response.status == 401) {
         alert("Your session has expired, please log in again");
         logoutUser();
       }
@@ -169,8 +168,7 @@ export function Tables(props) {
         setSnackbarMessage("Successfully affected !");
         setShowSnackbar(true);
         setColor("bg-green-300");
-      }
-      else if(response.status == 401){
+      } else if (response.status == 401) {
         alert("Your session has expired, please log in again");
         logoutUser();
       }
@@ -200,8 +198,7 @@ export function Tables(props) {
         setSnackbarMessage("Successfully Validzated !");
         setShowSnackbar(true);
         setColor("bg-green-300");
-      }
-      else if(response.status == 401){
+      } else if (response.status == 401) {
         alert("Your session has expired, please log in again");
         logoutUser();
       }
@@ -231,6 +228,9 @@ export function Tables(props) {
           const data = await response.json();
           setTickets(data);
           setHomeTickets(data);
+        } else if (response.status == 401) {
+          alert("Your session has expired, please log in again");
+          logoutUser();
         } else {
           console.log("Failed to fetch");
         }
@@ -306,6 +306,7 @@ export function Tables(props) {
                       username,
                       category,
                       issue,
+                      etat,
                       creationDate,
                       jobtitle,
                       idTicket,
@@ -363,7 +364,7 @@ export function Tables(props) {
                               <EnvelopeIcon className="h-5 w-5 text-blue-300" />
                             </IconButton>
                           </Tooltip>
-                          {user.type === "expert" && (
+                          {user.type === "expert" && etat ==="waiting" && (
                             <Tooltip
                               content="Validate The Ticket"
                               animate={{
