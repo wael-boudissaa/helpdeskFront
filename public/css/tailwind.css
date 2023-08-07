@@ -2,7 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-.menu::-webkit-scrollbar {
-    width: 0.5em; /* Adjust the width as needed */
+/* Style the entire scrollbar */
+*::-webkit-scrollbar {
+    width: 8px; /* Adjust the width as needed */
+    height: 6px;
+}
+
+/* Style the scrollbar thumb (the bar that indicates scrolling level) */
+*::-webkit-scrollbar-thumb {
+    background-color: #888; /* Change to your desired color */
+    border-radius: 5px; /* Add rounded corners to the thumb */
+}
+
+/* Style the scrollbar track (the area behind the thumb) */
+*::-webkit-scrollbar-track {
+    background-color: #f2f2f2; /* Change to your desired color */
+}
+
+/* Optional: Add smooth scrolling behavior */
+* {
     scroll-behavior: smooth;
+}
+
+.menu, .messages::-webkit-scrollbar{
+    display: none;
 }

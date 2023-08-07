@@ -32,14 +32,17 @@ export function Sidenav({ brandImg, brandName, routes }) {
           sidenavType === "dark" ? "border-white/20" : "border-blue-gray-50"
         }`}
       >
-        <Link to="/" className="flex items-center gap-4 py-6 px-8">
-          <Avatar src={brandImg} size="sm" />
+        <Link to="/" className="flex justify-center items-center gap-4 py-6 px-8">
+          {/* <Avatar src={brandImg} size="sm" />
           <Typography
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}
           >
             {brandName}
-          </Typography>
+          </Typography> */}
+          <div >
+            <img className="w-44 h-16" src={sidenavType === "dark" ? "/img/logo-dark.png" : "/img/logo.png"} alt="logo" />
+          </div>
         </Link>
         <IconButton
           variant="text"
@@ -49,7 +52,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
           className="absolute right-0 top-2 grid rounded-br-none rounded-tl-none xl:hidden"
           onClick={() => setOpenSidenav(dispatch, false)}
         >
-          <XMarkIcon strokeWidth={2.5} className={`h-5 w-5 text-red-300`} />
+          <XMarkIcon strokeWidth={2.5} className={`h-5 w-5 text-gray-500`} />
         </IconButton>
       </div>
       <div className="m-4">

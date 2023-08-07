@@ -13,6 +13,8 @@ import {
 } from "@material-tailwind/react";
 import AuthContext from "@/context/AuthContext";
 import SnackBar from "../SnackBar";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export function AddTickets({ open, handleOpen }) {
   const { user, authTokens, logoutUser } = useContext(AuthContext);
@@ -59,42 +61,67 @@ export function AddTickets({ open, handleOpen }) {
     setSelectedVersionOptions([]);
   };
 
+  const showErrorToast = (message) => {
+    toast.error(message, {
+      position: toast.POSITION.TOP_RIGHT,
+      autoClose: 3000, // Close after 3 seconds
+      hideProgressBar: true, // Hide the progress bar
+    });
+  };
+
   const postData = async () => {
-    try {
-      const authorization = "Bearer " + authTokens.access;
-      console.log(priority, issue, categorie);
-      const response = await fetch("http://127.0.0.1:8000/api/tickets/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: authorization,
-        },
-        body: JSON.stringify({
-          priority: priority,
-          issue: issue,
-          category: categorie,
-        }),
-      });
-      if (response.ok) {
-        setSnackbarMessage("Successfully sent !");
-        setShowSnackbar(true);
-        setColor("bg-green-300");
-      } else if (response.status == 401) {
-        alert("Your session has expired, please log in again");
-        logoutUser();
-      } else {
-        const data = await response.json();
-        console.log(data);
-        setSnackbarMessage(`${data.msg}`);
+    let missingFields = [];
+    if (!categorie) missingFields.push("category");
+    if (!issue) missingFields.push("issue");
+    if (!priority) missingFields.push("priority");
+    console.log(missingFields);
+    if (missingFields.length == 0) {
+      try {
+        const authorization = "Bearer " + authTokens.access;
+        const response = await fetch("http://127.0.0.1:8000/api/tickets/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: authorization,
+          },
+          body: JSON.stringify({
+            priority: priority,
+            issue: issue,
+            category: categorie,
+          }),
+        });
+        if (response.ok) {
+          setSnackbarMessage("Successfully sent !");
+          setShowSnackbar(true);
+          setColor("bg-green-300");
+          handleClose();
+        } else if (response.status == 401) {
+          alert("Your session has expired, please log in again");
+          logoutUser();
+        } else {
+          const data = await response.json();
+          console.log(data);
+          setSnackbarMessage(`${data.msg}`);
+          setShowSnackbar(true);
+          setColor("bg-red-300");
+          handleClose();
+        }
+      } catch (err) {
+        setSnackbarMessage(`Network error`);
         setShowSnackbar(true);
         setColor("bg-red-300");
       }
-    } catch (err) {
-      setSnackbarMessage(`Network error`);
-      setShowSnackbar(true);
-      setColor("bg-red-300");
+    }else{
+      let message = "Missing required fields: "
+      let i = 0;
+      for (let f of missingFields ) {
+        if (i == missingFields.length-1) message += f;
+        else message += f+", ";
+        i++;
+      };
+      console.log(message);
+      showErrorToast(message);
     }
-    handleClose();
   };
 
   return (
@@ -102,12 +129,13 @@ export function AddTickets({ open, handleOpen }) {
       <Dialog
         open={open}
         handler={handleClose}
-        className="min-w-fit overflow-y-auto md:w-[]"
+        className="min-w-fit overflow-y-auto"
       >
         <div className="flex items-center justify-between">
           <DialogHeader>New Ticket</DialogHeader>
         </div>
         <DialogBody className="flex items-center justify-center" divider>
+          <ToastContainer />
           <div className="grid gap-6">
             <Typography variant="h6" color="red" textGradient>
               * means that the field is required

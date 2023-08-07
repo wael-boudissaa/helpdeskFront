@@ -122,38 +122,38 @@ export const AuthProvider = ({ children }) => {
     logoutUser: logoutUser,
   };
 
-  useEffect(() => {
-    // Check if the flag for the current session exists
-    const hasEffectRunInSession = sessionStorage.getItem(
-      "hasEffectRunInSession"
-    );
-    const tokens = localStorage.getItem("authTokens");
-    const currentTime = Date.now() / 1000;
-    if (!sessionStorage.getItem("hasEffectRunInSession")) {
-      sessionStorage.setItem("hasEffectRunInSession", false);
-    }
-    if (!hasEffectRunInSession) {
-      if (tokens) {
-        const t = JSON.parse(tokens);
-        const u = jwtDecode(t.refresh);
-        if ((u.exp < currentTime)) {
-          alert("Your session has expired, please log in again");
-          navigate("/auth/sign-in");
-          setAuthTokens(null);
-          setUser(null);
-          localStorage.removeItem("authTokens");
-        }else {
-          updateToken();
-        }
-      } else {
-        setAuthTokens(null);
-        setUser(null);
-      }
+  // useEffect(() => {
+  //   // Check if the flag for the current session exists
+  //   const hasEffectRunInSession = sessionStorage.getItem(
+  //     "hasEffectRunInSession"
+  //   );
+  //   const tokens = localStorage.getItem("authTokens");
+  //   const currentTime = Date.now() / 1000;
+  //   if (!sessionStorage.getItem("hasEffectRunInSession")) {
+  //     sessionStorage.setItem("hasEffectRunInSession", false);
+  //   }
+  //   if (!hasEffectRunInSession) {
+  //     if (tokens) {
+  //       const t = JSON.parse(tokens);
+  //       const u = jwtDecode(t.refresh);
+  //       if ((u.exp < currentTime)) {
+  //         alert("Your session has expired, please log in again");
+  //         navigate("/auth/sign-in");
+  //         setAuthTokens(null);
+  //         setUser(null);
+  //         localStorage.removeItem("authTokens");
+  //       }else {
+  //         updateToken();
+  //       }
+  //     } else {
+  //       setAuthTokens(null);
+  //       setUser(null);
+  //     }
 
-      // Set the flag to indicate the effect has run in the current session
-      sessionStorage.setItem("hasEffectRunInSession", true);
-    }
-  }, []);
+  //     // Set the flag to indicate the effect has run in the current session
+  //     sessionStorage.setItem("hasEffectRunInSession", true);
+  //   }
+  // }, []);
 
   // useEffect(() => {
   //   const tokens = localStorage.getItem("authTokens")
@@ -176,7 +176,7 @@ export const AuthProvider = ({ children }) => {
   // }, []);
 
   useEffect(() => {
-    const REFRESH_INTERVAL = 1000 * 60 * 60; // 60 minutes
+    const REFRESH_INTERVAL = 1000 * 60 * 58; // 60 minutes
     let interval = setInterval(() => {
       if (authTokens) {
         updateToken();
