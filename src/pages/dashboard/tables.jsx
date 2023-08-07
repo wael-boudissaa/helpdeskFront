@@ -28,6 +28,7 @@ import { RemoveTicket } from "@/widgets/pop-ups/RemoveTicket";
 import { AddTickets } from "@/widgets/pop-ups/AddTickets";
 import { ValidateTicket } from "@/widgets/pop-ups/ValidateTicket";
 import SnackBar from "@/widgets/SnackBar";
+import Discussion from "@/widgets/pop-ups/Discussion";
 
 function ClockIcon() {
   return (
@@ -51,6 +52,9 @@ function ClockIcon() {
 export function Tables(props) {
   const [idTicketSupprime, setIdTicketSupprime] = useState("");
   const [idTicketValide, setIdTicketValide] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [discussionTicketState, setDiscussionTicketState] = useState("");
+  const [discussionTicketId, setDiscussionTicketId] = useState("");
   const selectedTable = props.selectedTable;
   const setHomeTickets = props.setHomeTickets;
   const { user, authTokens, logoutUser } = useContext(AuthContext);
@@ -68,12 +72,11 @@ export function Tables(props) {
   const adjustDate = (isoDate) => {
     const options = {
       year: "numeric",
-      month: "long",
+      month: "numeric",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
-      timeZoneName: "short",
     };
     const date = new Date(isoDate);
     return date.toLocaleDateString("en-US", options);
@@ -111,6 +114,8 @@ export function Tables(props) {
   const handleOpenValidate = () => setOpenValidate(!openValidate);
   const [actionHappened, setActionHappened] = useState(false);
   const handleOpenDeleteSure = () => setOpenDeleteSure(!openDeleteSure);
+  const [openDiscussion, setOpenDiscussion] = useState(false);
+  const handleOpenDiscussion = () => setOpenDiscussion(!openDiscussion);
   const typeUser = () => {
     if (user.type == "expert") {
       return "applicant";
@@ -210,6 +215,31 @@ export function Tables(props) {
     }
   };
 
+  const fetchMessages = async (idTicket) => {
+    try {
+      const authorization = "Bearer " + authTokens.access;
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/messages/${idTicket}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: authorization,
+          },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data);
+        console.log(data);
+      } else if (response.status == 401) {
+        alert("Your session has expired, please log in again");
+        logoutUser();
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       const authorization = "Bearer " + authTokens.access;
@@ -238,7 +268,7 @@ export function Tables(props) {
         console.log(err);
       }
     };
-    fetchData();
+    if (authTokens) {fetchData();}
   }, [authTokens, open, actionHappened]);
 
   useEffect(() => {
@@ -251,7 +281,6 @@ export function Tables(props) {
       if (t.etat === condition) list.push(t);
     }
     setFilteredTickets(list);
-    console.log(filtredTickets);
   }, [tickets, selectedTable]);
 
   return (
@@ -260,7 +289,7 @@ export function Tables(props) {
         <CardHeader
           variant="gradient"
           color={sidenavColor}
-          className="mb-8 flex flex-row justify-between p-6"
+          className="mb-8 flex flex-row items-center justify-between p-6"
         >
           <Typography variant="h6" color="white">
             {selectedTable}
@@ -279,7 +308,7 @@ export function Tables(props) {
             </Tooltip>
           )}
         </CardHeader>
-        <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
+        <CardBody className=" table_card overflow-x-scroll px-0 pt-0 pb-2">
           {user.type !== "admin" ? (
             <table className="w-full min-w-[640px] table-auto">
               <thead>
@@ -360,11 +389,20 @@ export function Tables(props) {
                               unmount: { scale: 0, y: 25 },
                             }}
                           >
-                            <IconButton variant="text" color="blue-gray">
+                            <IconButton
+                              variant="text"
+                              color="blue-gray"
+                              onClick={() => {
+                                handleOpenDiscussion();
+                                fetchMessages(idTicket);
+                                setDiscussionTicketState(etat);
+                                setDiscussionTicketId(idTicket);
+                              }}
+                            >
                               <EnvelopeIcon className="h-5 w-5 text-blue-300" />
                             </IconButton>
                           </Tooltip>
-                          {user.type === "expert" && etat ==="waiting" && (
+                          {user.type === "expert" && etat === "waiting" && (
                             <Tooltip
                               content="Validate The Ticket"
                               animate={{
@@ -497,7 +535,16 @@ export function Tables(props) {
                               unmount: { scale: 0, y: 25 },
                             }}
                           >
-                            <IconButton variant="text" color="blue-gray">
+                            <IconButton
+                              variant="text"
+                              color="blue-gray"
+                              onClick={() => {
+                                handleOpenDiscussion();
+                                fetchMessages(idTicket);
+                                setDiscussionTicketState(etat);
+                                setDiscussionTicketId(idTicket)
+                              }}
+                            >
                               <EnvelopeIcon className="h-5 w-5 text-blue-300" />
                             </IconButton>
                           </Tooltip>
@@ -533,7 +580,7 @@ export function Tables(props) {
                                         size="sm"
                                         variant="circular"
                                         alt="tania andrew"
-                                        src="https://upload.wikimedia.org/wikipedia/commons/7/7c/User_font_awesome.svg"
+                                        src="/img/user.svg"
                                       />
                                       <div className="flex flex-col gap-1">
                                         <Typography
@@ -562,14 +609,15 @@ export function Tables(props) {
                                 unmount: { scale: 0, y: 25 },
                               }}
                             >
-                              <IconButton variant="text" color="blue-gray">
-                                <TrashIcon
-                                  onClick={() => {
-                                    handleOpenDeleteSure();
-                                    setIdTicketSupprime(idTicket);
-                                  }}
-                                  className="h-5 w-5 text-red-300"
-                                />
+                              <IconButton
+                                onClick={() => {
+                                  handleOpenDeleteSure();
+                                  setIdTicketSupprime(idTicket);
+                                }}
+                                variant="text"
+                                color="blue-gray"
+                              >
+                                <TrashIcon className="h-5 w-5 text-red-300" />
                               </IconButton>
                             </Tooltip>
                           )}
@@ -584,6 +632,14 @@ export function Tables(props) {
         </CardBody>
       </Card>
       <AddTickets open={open} handleOpen={handleOpen} />
+      <Discussion
+        open={openDiscussion}
+        handleOpen={handleOpenDiscussion}
+        messages={messages}
+        discussionTicketState={discussionTicketState}
+        discussionTicketId={discussionTicketId}
+        refreshMessages={fetchMessages}
+      />
       <RemoveTicket
         openDeleteSure={openDeleteSure}
         handleOpenDeleteSure={handleOpenDeleteSure}
