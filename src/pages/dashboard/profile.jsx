@@ -11,21 +11,336 @@ import {
   Switch,
   Tooltip,
   Button,
+  DialogBody,
+  Dialog,
+  IconButton,
 } from "@material-tailwind/react";
 import {
   HomeIcon,
   ChatBubbleLeftEllipsisIcon,
   Cog6ToothIcon,
   PencilIcon,
+  CheckIcon,
+  PlusCircleIcon,
 } from "@heroicons/react/24/solid";
 import { Link } from "react-router-dom";
 import { ProfileInfoCard, MessageCard } from "@/widgets/cards";
 import { platformSettingsData, conversationsData, projectsData } from "@/data";
+import { createElement, useContext, useEffect, useState } from "react";
+
+import AuthContext from "@/context/AuthContext";
+import { useMaterialTailwindController } from "@/context";
+import AddUser from "@/widgets/pop-ups/AddUser";
+import { data } from "autoprefixer";
 
 export function Profile() {
+  //** Bring the users from the backend fetch methode  */
+  const [profiles, setProfiles] = useState([]);
+  const [dataSent,setDataSent]= useState(false)
+  const { authTokens } = useContext(AuthContext);
+  const [controller] = useMaterialTailwindController();
+  const { sidenavColor } = controller;
+  const adjustDate = (isoDate) => {
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      timeZoneName: "short",
+    };
+    const date = new Date(isoDate);
+    return date.toLocaleDateString("en-US", options);
+  };
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      const authorization = "Bearer " + authTokens.access;
+      const requestOptions = {
+        method: "GET",
+        headers: {
+          Authorization: authorization,
+        },
+      };
+      try {
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/profiles/",
+          requestOptions
+        );
+        if (response.ok) {
+          const fetchedP = await response.json();
+
+          setProfiles(fetchedP);
+          
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchProfiles();
+  }, [dataSent]);
+
+  const TABLE_HEAD = [
+    "username",
+    "First Name ",
+    "Last Name",
+    "Job",
+    "Data Joined",
+    "email",
+  ];
+  const [addUser, setAddUser] =useState(false);
+
+  const handleAddUser = () => setAddUser(!addUser);
+  const TypeTable = ["All", "Experts", "Applicants"];
+  const [typeTable, setTypeTable] = useState("All");
   return (
-    <>
-      <div className="relative mt-8 h-72 w-full overflow-hidden rounded-xl bg-[url(https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80)] bg-cover	bg-center">
+    <div className="flex flex-col ">
+      <div className="flex flex-row-reverse ">
+        <Tooltip
+          content="Add a User"
+          animate={{
+            mount: { scale: 0.8, y: 0 },
+            unmount: { scale: 0, y: 25 },
+          }}
+        >
+          <IconButton onClick={()=> handleAddUser()} size="lg" color={sidenavColor}>
+            <PlusCircleIcon className="white h-5 w-5" />
+          </IconButton>
+        </Tooltip>
+      </div>
+
+      <Tabs value="All">
+        <TabsHeader>
+          {TypeTable.map((e) => (
+            <Tab value={e} onClick={() => setTypeTable(e)}>
+              <div>
+                {createElement(HomeIcon, { className: "w-5 h-5" })}
+                {e}
+              </div>
+            </Tab>
+          ))}
+        </TabsHeader>
+      </Tabs>
+      {(typeTable == "All" || typeTable == "Experts") && (
+        <Card className=" h-full w-full overflow-scroll ">
+          <table className="w-full min-w-max table-auto text-left">
+            <thead>
+              <tr>
+                {TABLE_HEAD.map((head) => (
+                  <th
+                    key={head}
+                    className="border-b border-blue-gray-100 bg-blue-gray-50 p-4"
+                  >
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal leading-none opacity-70"
+                    >
+                      {head}
+                    </Typography>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {profiles.map(
+                (
+                  {
+                    username,
+                    job,
+                    type,
+                    date_joined,
+                    first_name,
+                    last_name,
+                    email,
+                  },
+                  index
+                ) => {
+                  const isLast = index === profiles.length - 1;
+                  const classes = isLast
+                    ? "p-4"
+                    : "p-4 border-b border-blue-gray-50";
+                  if (type === "expert")
+                    return (
+                      <tr>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {username}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {first_name}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {last_name}
+                          </Typography>
+                        </td>
+
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {job}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {adjustDate(date_joined)}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {email}
+                          </Typography>
+                        </td>
+                      </tr>
+                    );
+                }
+              )}
+            </tbody>
+          </table>
+        </Card>
+      )}
+      {(typeTable == "All" || typeTable == "Applicants") && (
+        <Card className="h-full w-full overflow-scroll">
+          <table className="w-full min-w-max table-auto text-left">
+            <thead >
+              <tr className="bg-blue-400">
+                {TABLE_HEAD.map((head) => (
+                  <th
+                    key={head}
+                    className="border-b border-blue-gray-100 bg-blue-gray-50 p-4"
+                  >
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal leading-none opacity-70"
+                    >
+                      {head}
+                    </Typography>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {profiles.map(
+                (
+                  {
+                    username,
+                    job,
+                    type,
+                    date_joined,
+                    last_name,
+                    first_name,
+                    email,
+                  },
+                  index
+                ) => {
+                  const isLast = index === profiles.length - 1;
+                  const classes = isLast
+                    ? "p-4"
+                    : "p-4 border-b border-blue-gray-50";
+                  if (type === "applicant")
+                    return (
+                      <tr>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {username}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {first_name}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {last_name}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {job}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {adjustDate(date_joined)}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {email}
+                          </Typography>
+                        </td>
+                      </tr>
+                    );
+                }
+              )}
+            </tbody>
+          </table>
+        </Card>
+      )}
+      <AddUser handleAddUser={handleAddUser} addUser={addUser} dataSent= {dataSent} setDataSent={setDataSent}/>
+    </div>
+  );
+}
+{
+  /* // export function Profile() { */
+}
+//   return (
+
+{
+  /* <div className="relative mt-8 h-72 w-full overflow-hidden rounded-xl bg-[url(https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80)] bg-cover	bg-center">
         <div className="absolute inset-0 h-full w-full bg-blue-500/50" />
       </div>
       <Card className="mx-3 -mt-16 mb-6 lg:mx-4">
@@ -212,9 +527,10 @@ export function Profile() {
             </div>
           </div>
         </CardBody>
-      </Card>
-    </>
-  );
+      </Card> */
 }
+//     </Dialog>
+//   );
+// }
 
 export default Profile;

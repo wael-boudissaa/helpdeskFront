@@ -294,7 +294,7 @@ export function Tables(props) {
           <Typography variant="h6" color="white">
             {selectedTable}
           </Typography>
-          {user.type === "applicant" && selectedTable === "Waiting Tickets" && (
+          {(user.type === "applicant" && selectedTable === "Waiting Tickets") && (
             <Tooltip
               content="Add a Ticket"
               animate={{
