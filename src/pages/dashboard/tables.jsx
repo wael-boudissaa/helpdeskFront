@@ -260,12 +260,12 @@ export function Tables(props) {
         <CardHeader
           variant="gradient"
           color={sidenavColor}
-          className="mb-8 flex flex-row justify-between p-6"
+          className="mb-8 flex flex-row justify-between p-6 items-center"
         >
           <Typography variant="h6" color="white">
             {selectedTable}
           </Typography>
-          {user.type === "applicant" && selectedTable === "Waiting Tickets" && (
+          {(user.type === "applicant" && selectedTable === "Waiting Tickets") && (
             <Tooltip
               content="Add a Ticket"
               animate={{
