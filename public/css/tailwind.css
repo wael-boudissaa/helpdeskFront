@@ -24,6 +24,6 @@
     scroll-behavior: smooth;
 }
 
-.menu, .messages::-webkit-scrollbar{
+.menu::-webkit-scrollbar, .messages::-webkit-scrollbar{
     display: none;
 }
