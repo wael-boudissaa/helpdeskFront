@@ -65,6 +65,7 @@ export function Tables(props) {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [color, setColor] = useState("");
+  const [experts, setExperts] = useState([]);
 
   const handleSnackbarClose = () => {
     setShowSnackbar(false);
@@ -81,32 +82,28 @@ export function Tables(props) {
     const date = new Date(isoDate);
     return date.toLocaleDateString("en-US", options);
   };
-  const experts = [
-    {
-      first_name: "Boudissa",
-      second_name: "Wael",
-      domaine_expertise: "IT support",
-      expert_user_name: "wael",
-    },
-    {
-      first_name: "Dupont",
-      second_name: "Sophie",
-      domaine_expertise: "Marketing",
-      expert_user_name: "Sofie",
-    },
-    {
-      first_name: "Lefebvre",
-      second_name: "Pierre",
-      domaine_expertise: "Finance",
-      expert_user_name: "pierre",
-    },
-    {
-      first_name: "Martin",
-      second_name: "Julie",
-      domaine_expertise: "Human Resources",
-      expert_user_name: "julie",
-    },
-  ];
+  useEffect(() => {
+    const fetchExperts = async () => {
+      const authorization = "Bearer " + authTokens.access;
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/experts/", {
+          method: "GET",
+          headers: {
+            // 'Content-type' : "application/json",
+            Authorization: authorization,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setExperts(data);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchExperts();
+  }, []);
+
   const [open, setOpen] = useState(false);
   const [openDeleteSure, setOpenDeleteSure] = useState(false);
   const handleOpen = () => setOpen(!open);
@@ -268,7 +265,9 @@ export function Tables(props) {
         console.log(err);
       }
     };
-    if (authTokens) {fetchData();}
+    if (authTokens) {
+      fetchData();
+    }
   }, [authTokens, open, actionHappened]);
 
   useEffect(() => {
@@ -294,7 +293,7 @@ export function Tables(props) {
           <Typography variant="h6" color="white">
             {selectedTable}
           </Typography>
-          {(user.type === "applicant" && selectedTable === "Waiting Tickets") && (
+          {user.type === "applicant" && selectedTable === "Waiting Tickets" && (
             <Tooltip
               content="Add a Ticket"
               animate={{
@@ -542,7 +541,7 @@ export function Tables(props) {
                                 handleOpenDiscussion();
                                 fetchMessages(idTicket);
                                 setDiscussionTicketState(etat);
-                                setDiscussionTicketId(idTicket)
+                                setDiscussionTicketId(idTicket);
                               }}
                             >
                               <EnvelopeIcon className="h-5 w-5 text-blue-300" />
@@ -569,10 +568,7 @@ export function Tables(props) {
                                   return (
                                     <MenuItem
                                       onClick={() => {
-                                        affectTicket(
-                                          idTicket,
-                                          expert.expert_user_name
-                                        );
+                                        affectTicket(idTicket, expert.username);
                                       }}
                                       className="flex items-center gap-4 py-2 pr-8 pl-2"
                                     >
@@ -589,8 +585,8 @@ export function Tables(props) {
                                           className="font-normal"
                                         >
                                           <p className="font-medium text-blue-gray-900">
-                                            {expert.first_name}{" "}
-                                            {expert.second_name}
+                                            {expert.first_name+" "}
+                                            {expert.last_name}
                                           </p>
                                           {expert.domaine_expertise}
                                         </Typography>
