@@ -94,6 +94,21 @@ export function AddTickets({ open, handleOpen }) {
           setSnackbarMessage("Successfully sent !");
           setShowSnackbar(true);
           setColor("bg-green-300");
+          const data = await response.json();
+          console.log(data.idTicket);
+          fetch("http://127.0.0.1:8000/api/messages/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: authorization,
+            },
+            body: JSON.stringify({
+              idTicket: data.idTicket,
+              text: message,
+            }),
+          }).catch((err) =>
+            showErrorToast("The Ticket message haven't been sent")
+          );
           handleClose();
         } else if (response.status == 401) {
           alert("Your session has expired, please log in again");
@@ -111,14 +126,14 @@ export function AddTickets({ open, handleOpen }) {
         setShowSnackbar(true);
         setColor("bg-red-300");
       }
-    }else{
-      let message = "Missing required fields: "
+    } else {
+      let message = "Missing required fields: ";
       let i = 0;
-      for (let f of missingFields ) {
-        if (i == missingFields.length-1) message += f;
-        else message += f+", ";
+      for (let f of missingFields) {
+        if (i == missingFields.length - 1) message += f;
+        else message += f + ", ";
         i++;
-      };
+      }
       console.log(message);
       showErrorToast(message);
     }
@@ -195,7 +210,7 @@ export function AddTickets({ open, handleOpen }) {
                   })}
                 </Select>
               </div>
-              <Textarea maxLength={800} label="Message" />
+              <Textarea onChange={(e) => setMessage(e.target.value)} maxLength={800} label="Message" />
             </div>
           </div>
         </DialogBody>

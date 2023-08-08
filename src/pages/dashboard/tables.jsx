@@ -4,16 +4,17 @@ import {
   CardBody,
   Typography,
   Tooltip,
-  Progress,
+  // Progress,
   IconButton,
+  
+  Avatar,
   Menu,
   MenuHandler,
   MenuList,
   MenuItem,
-  Avatar,
 } from "@material-tailwind/react";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import { authorsTableData, projectsTableData } from "@/data";
+// import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+// import { authorsTableData, projectsTableData } from "@/data";
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "@/context/AuthContext";
 import { useMaterialTailwindController } from "@/context";
@@ -29,25 +30,8 @@ import { AddTickets } from "@/widgets/pop-ups/AddTickets";
 import { ValidateTicket } from "@/widgets/pop-ups/ValidateTicket";
 import SnackBar from "@/widgets/SnackBar";
 import Discussion from "@/widgets/pop-ups/Discussion";
-
-function ClockIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className="h-3 w-3"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-  );
-}
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export function Tables(props) {
   const [idTicketSupprime, setIdTicketSupprime] = useState("");
@@ -284,6 +268,7 @@ export function Tables(props) {
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
+      <ToastContainer />
       <Card>
         <CardHeader
           variant="gradient"
@@ -548,20 +533,14 @@ export function Tables(props) {
                             </IconButton>
                           </Tooltip>
 
-                          {user.type === "admin" && etat === "waiting" && (
+                           {user.type === "admin" && etat === "waiting" && (
                             <Menu>
                               <MenuHandler>
-                                {/* <Tooltip
-                                  content="Transfert to Expert"
-                                  animate={{
-                                    mount: { scale: 1, y: 0 },
-                                    unmount: { scale: 0, y: 25 },
-                                  }}
-                                > */}
+                                
                                 <IconButton variant="text" color="blue-gray">
                                   <PaperAirplaneIcon className="text-black-300 h-5 w-5" />
                                 </IconButton>
-                                {/* </Tooltip> */}
+              
                               </MenuHandler>
                               <MenuList className="menu flex max-h-64 w-72 flex-col gap-2 overflow-auto">
                                 {experts.map((expert) => {
@@ -596,7 +575,7 @@ export function Tables(props) {
                                 })}
                               </MenuList>
                             </Menu>
-                          )}
+                          )} 
                           {user.type === "admin" && etat !== "archived" && (
                             <Tooltip
                               content="Remove to Archive"
