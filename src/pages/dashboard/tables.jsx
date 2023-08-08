@@ -50,7 +50,6 @@ export function Tables(props) {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [color, setColor] = useState("");
   const [experts, setExperts] = useState([]);
-
   const handleSnackbarClose = () => {
     setShowSnackbar(false);
   };
@@ -66,28 +65,6 @@ export function Tables(props) {
     const date = new Date(isoDate);
     return date.toLocaleDateString("en-US", options);
   };
-  useEffect(() => {
-    const fetchExperts = async () => {
-      const authorization = "Bearer " + authTokens.access;
-      try {
-        const response = await fetch("http://127.0.0.1:8000/api/experts/", {
-          method: "GET",
-          headers: {
-            // 'Content-type' : "application/json",
-            Authorization: authorization,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setExperts(data);
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    fetchExperts();
-  }, []);
-
   const [open, setOpen] = useState(false);
   const [openDeleteSure, setOpenDeleteSure] = useState(false);
   const handleOpen = () => setOpen(!open);
@@ -220,6 +197,28 @@ export function Tables(props) {
       console.log(err);
     }
   };
+
+  useEffect(() => {
+    const fetchExperts = async () => {
+      const authorization = "Bearer " + authTokens.access;
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/experts/", {
+          method: "GET",
+          headers: {
+            // 'Content-type' : "application/json",
+            Authorization: authorization,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setExperts(data);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    if (user.type === "admin"){fetchExperts();}
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
