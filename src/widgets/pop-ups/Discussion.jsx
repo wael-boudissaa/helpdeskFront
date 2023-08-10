@@ -12,6 +12,9 @@ import {
 } from "@material-tailwind/react";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import SnackBar from "../SnackBar";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import jwtDecode from "jwt-decode";
 
 function Message({ userIconSrc, firstName, lastName, date, message }) {
   const adjustDate = (isoDate) => {
@@ -60,6 +63,13 @@ function Discussion({
   const handleSnackbarClose = () => {
     setShowSnackbar(false);
   };
+  const showToast = (message) => {
+    toast.error(message, {
+      position: toast.POSITION.TOP_RIGHT,
+      autoClose: 3000,
+      hideProgressBar: true,
+    });
+  };
   const postMessage = async () => {
     try {
       const authorization = "Bearer " + authTokens.access;
@@ -71,20 +81,26 @@ function Discussion({
         },
         body: JSON.stringify({
           idTicket: discussionTicketId,
-          text: text
+          text: text,
         }),
       });
       if (response.ok) {
         refreshMessages(discussionTicketId);
         setText("");
       } else if (response.status == 401) {
-        alert("Your session has expired, please log in again");
-        logoutUser();
+        const currentTime = Date.now() / 1000;
+        const t = authTokens
+        const u = jwtDecode(t.refresh);
+        if (u.exp < currentTime) {
+          alert("Your session has expired, please log in again");
+          logoutUser();
+        } else {
+          await updateToken();
+          showToast("Sending Failed, Try again");
+        }
       }
     } catch (err) {
-      setSnackbarMessage(`Network error`);
-      setShowSnackbar(true);
-      setColor("bg-red-300");
+      showToast("Sending Failed, Try again");
     }
   };
   const messagesContainerRef = useRef(null);
@@ -106,12 +122,20 @@ function Discussion({
           <DialogHeader>Ticket Discussion</DialogHeader>
         </div>
         <DialogBody className="flex flex-col gap-6" divider>
-          <div ref={messagesContainerRef} className="messages flex w-96 flex-col p-4 lg:w-[896px] h-64 overflow-auto">
+          <ToastContainer />
+          <div
+            ref={messagesContainerRef}
+            className="messages flex h-64 w-96 flex-col overflow-auto p-4 lg:w-[896px]"
+          >
             {messages.map((message) => {
               return (
                 <Message
                   key={message.idMessage}
-                  userIconSrc={message.source.type === 'applicant'?"/img/dis_user.jpg":"/img/expert.jpg"}
+                  userIconSrc={
+                    message.source.type === "applicant"
+                      ? "/img/dis_user.jpg"
+                      : "/img/expert.jpg"
+                  }
                   firstName={message.source.first_name}
                   lastName={message.source.last_name}
                   date={message.creationDate}
@@ -138,9 +162,18 @@ function Discussion({
                 onChange={(e) => {
                   setText(e.target.value);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    postMessage();
+                  }
+                }}
               />
               <div>
-                <IconButton variant="text" className="rounded-full">
+                <IconButton
+                  onClick={postMessage}
+                  variant="text"
+                  className="rounded-full"
+                >
                   <PaperAirplaneIcon className="text-black-300 h-5 w-5" />
                 </IconButton>
               </div>
@@ -152,9 +185,9 @@ function Discussion({
           <Button variant="outlined" color="red" onClick={handleOpen}>
             close
           </Button>
-          <Button variant="gradient" color="green" onClick={postMessage}>
+          {/* <Button variant="gradient" color="green" onClick={postMessage}>
             send message
-          </Button>
+          </Button> */}
         </DialogFooter>
       </Dialog>
       {showSnackbar && (

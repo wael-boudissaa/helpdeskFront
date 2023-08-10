@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogBody,
   DialogFooter,
-  Textarea,
+  // Textarea,
   Select,
   Dialog,
   Input,
@@ -15,6 +15,7 @@ import AuthContext from "@/context/AuthContext";
 import SnackBar from "../SnackBar";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import jwtDecode from "jwt-decode";
 const AddUser = ({ handleAddUser, addUser, dataSent, setDataSent }) => {
   const [userName, setUserName] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -22,13 +23,11 @@ const AddUser = ({ handleAddUser, addUser, dataSent, setDataSent }) => {
   const [job, setJob] = useState("");
   const [email, setEmail] = useState("");
   const [typeUser, setTypeUser] = useState("");
-  const { authTokens } = useContext(AuthContext);
+  const { authTokens, updateToken } = useContext(AuthContext);
   const [showSnackbar, setShowSnackBar] = useState(false);
   const [color, setColor] = useState("");
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [password, setPassword] = useState("");
-  const [errUsername, setErrUsername] = useState(false);
-  const [errUserMessage, setErrUserMessage] = useState("");
   const handleSnackbarClose = () => {
     setShowSnackBar(!SnackBar);
   };
@@ -78,18 +77,23 @@ const AddUser = ({ handleAddUser, addUser, dataSent, setDataSent }) => {
           setColor("bg-green-300");
           setSnackbarMessage(`Successfully add ${typeUser}`);
           handleAddUser();
-        } else if (response.status === 400) {
+        } else if (response.status === 406) {
           //*Snack bar
-          setColor("bg-red-300");
-          setSnackbarMessage(`${userName} Duplicated`);
-          setShowSnackBar(!showSnackbar);
+          showToast(`${userName} Duplicated`);
+        } else if (response.status == 401){
+          const currentTime = Date.now() / 1000;
+          const t = authTokens
+          const u = jwtDecode(t.refresh);
+          if (u.exp < currentTime) {
+            alert("Your session has expired, please log in again");
+            logoutUser();
+          } else {
+            await updateToken();
+            showToast("Sending Failed, Try again");
+          }
         }
       } catch (err) {
-        console.log(err.response);
-        handleAddUser();
-        setShowSnackBar(!showSnackbar);
-        setColor("bg-red-300");
-        setSnackbarMessage(`${err}`);
+        showToast("Sending Failed, Try again");
       }
     } else {
       let message = "Missing required fields :  ";

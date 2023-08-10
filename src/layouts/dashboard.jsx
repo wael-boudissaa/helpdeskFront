@@ -1,11 +1,11 @@
 import { Routes, Route } from "react-router-dom";
-import { Cog6ToothIcon } from "@heroicons/react/24/solid";
-import { IconButton } from "@material-tailwind/react";
+// import { Cog6ToothIcon } from "@heroicons/react/24/solid";
+// import { IconButton } from "@material-tailwind/react";
 import {
   Sidenav,
   DashboardNavbar,
   Configurator,
-  Footer,
+  // Footer,
 } from "@/widgets/layout";
 import routes from "@/routes";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
@@ -51,15 +51,6 @@ export function Dashboard() {
                 )
               )
           )}
-          {/* <Route
-            path="*"
-            element={
-              <Navigate
-                to="/dashboard/home"
-                replace
-              />
-            }
-          /> */}
         </Routes>
       </div>
     </div>

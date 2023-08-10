@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect } from "react";
 import jwtDecode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
-import { data } from "autoprefixer";
+// import { data } from "autoprefixer";
 
 const AuthContext = createContext();
 
@@ -19,7 +19,6 @@ export const AuthProvider = ({ children }) => {
       : null
   );
   let [loading, setLoading] = useState(true);
-  const [show, setShow] = useState(false);
 
   const navigate = useNavigate();
 
@@ -92,6 +91,7 @@ export const AuthProvider = ({ children }) => {
   //   }
   // };
   const updateToken = async () => {
+    let res;
     const response = await fetch("http://127.0.0.1:8000/api/token/refresh/", {
       method: "POST",
       headers: {
@@ -105,21 +105,24 @@ export const AuthProvider = ({ children }) => {
       setAuthTokens(data);
       setUser(jwtDecode(data.access));
       localStorage.setItem("authTokens", JSON.stringify(data));
+      res = true;
     } else {
       logoutUser();
+      res = false;
     }
 
     if (loading) {
       setLoading(false);
     }
+    return res;
   };
 
   let contextData = {
     user: user,
     authTokens: authTokens,
-    show: show,
     loginUser: loginUser,
     logoutUser: logoutUser,
+    updateToken: updateToken
   };
 
   // useEffect(() => {

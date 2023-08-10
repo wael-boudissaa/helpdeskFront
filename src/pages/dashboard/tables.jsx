@@ -6,7 +6,6 @@ import {
   Tooltip,
   // Progress,
   IconButton,
-  
   Avatar,
   Menu,
   MenuHandler,
@@ -32,6 +31,7 @@ import SnackBar from "@/widgets/SnackBar";
 import Discussion from "@/widgets/pop-ups/Discussion";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import jwtDecode from "jwt-decode";
 
 export function Tables(props) {
   const [idTicketSupprime, setIdTicketSupprime] = useState("");
@@ -41,7 +41,7 @@ export function Tables(props) {
   const [discussionTicketId, setDiscussionTicketId] = useState("");
   const selectedTable = props.selectedTable;
   const setHomeTickets = props.setHomeTickets;
-  const { user, authTokens, logoutUser } = useContext(AuthContext);
+  const { user, authTokens, logoutUser, updateToken } = useContext(AuthContext);
   const [tickets, setTickets] = useState([]);
   const [filtredTickets, setFilteredTickets] = useState([]);
   const [controller, dispatch] = useMaterialTailwindController();
@@ -71,6 +71,10 @@ export function Tables(props) {
   const [openValidate, setOpenValidate] = useState(false);
   const handleOpenValidate = () => setOpenValidate(!openValidate);
   const [actionHappened, setActionHappened] = useState(false);
+  const [refetchMsg, setRefetchMsg] = useState(false);
+  const [refetchExperts, setRefetchExperts] = useState(false)
+  const [initialRender, setInitialRender] = useState(true);
+  const handleAction = () => setActionHappened(!actionHappened);
   const handleOpenDeleteSure = () => setOpenDeleteSure(!openDeleteSure);
   const [openDiscussion, setOpenDiscussion] = useState(false);
   const handleOpenDiscussion = () => setOpenDiscussion(!openDiscussion);
@@ -78,8 +82,8 @@ export function Tables(props) {
     if (user.type == "expert") {
       return "applicant";
     }
-    return "expert";
-  };
+    return "expert"; 
+  }; /* a table header */
   const DeleteTicket = async (deletedTicket) => {
     const authorization = "Bearer " + authTokens.access;
     try {
@@ -99,8 +103,18 @@ export function Tables(props) {
         setShowSnackbar(true);
         setColor("bg-green-300");
       } else if (response.status == 401) {
-        alert("Your session has expired, please log in again");
-        logoutUser();
+        const currentTime = Date.now() / 1000;
+        const t = authTokens;
+        const u = jwtDecode(t.refresh);
+        if (u.exp < currentTime) {
+          alert("Your session has expired, please log in again");
+          logoutUser();
+        } else {
+          await updateToken();
+          setSnackbarMessage("Operation failed, Try again");
+          setShowSnackbar(true);
+          setColor("bg-red-300");
+        }
       }
     } catch (err) {
       console.log(err);
@@ -132,8 +146,18 @@ export function Tables(props) {
         setShowSnackbar(true);
         setColor("bg-green-300");
       } else if (response.status == 401) {
-        alert("Your session has expired, please log in again");
-        logoutUser();
+        const currentTime = Date.now() / 1000;
+        const t = authTokens;
+        const u = jwtDecode(t.refresh);
+        if (u.exp < currentTime) {
+          alert("Your session has expired, please log in again");
+          logoutUser();
+        } else {
+          await updateToken();
+          setSnackbarMessage("Operation failed, Try again");
+          setShowSnackbar(true);
+          setColor("bg-red-300");
+        }
       }
     } catch (err) {
       console.log(err);
@@ -162,8 +186,18 @@ export function Tables(props) {
         setShowSnackbar(true);
         setColor("bg-green-300");
       } else if (response.status == 401) {
-        alert("Your session has expired, please log in again");
-        logoutUser();
+        const currentTime = Date.now() / 1000;
+        const t = authTokens;
+        const u = jwtDecode(t.refresh);
+        if (u.exp < currentTime) {
+          alert("Your session has expired, please log in again");
+          logoutUser();
+        } else {
+          await updateToken();
+          setSnackbarMessage("Operation failed, Try again");
+          setShowSnackbar(true);
+          setColor("bg-red-300");
+        }
       }
     } catch (err) {
       console.log(err);
@@ -173,7 +207,17 @@ export function Tables(props) {
     }
   };
 
+  /* Refrech the messages in case of unauthorised response while fetching them */
+  useEffect(() => {
+    if (!initialRender) {
+      fetchMessages(discussionTicketId);
+    } else {
+      setInitialRender(false);
+    }
+  }, [refetchMsg])
+
   const fetchMessages = async (idTicket) => {
+    console.log(authTokens.access);
     try {
       const authorization = "Bearer " + authTokens.access;
       const response = await fetch(
@@ -188,10 +232,17 @@ export function Tables(props) {
       if (response.ok) {
         const data = await response.json();
         setMessages(data);
-        console.log(data);
       } else if (response.status == 401) {
-        alert("Your session has expired, please log in again");
-        logoutUser();
+        const currentTime = Date.now() / 1000;
+        const t = authTokens;
+        const u = jwtDecode(t.refresh);
+        if (u.exp < currentTime) {
+          alert("Your session has expired, please log in again");
+          logoutUser();
+        } else {
+          const res = await updateToken();
+          if (res) setRefetchMsg(!refetchMsg);
+        }
       }
     } catch (err) {
       console.log(err);
@@ -212,14 +263,24 @@ export function Tables(props) {
         if (response.ok) {
           const data = await response.json();
           setExperts(data);
+        } else if (response.status == 401) {
+          const currentTime = Date.now() / 1000;
+          const t = authTokens;
+          const u = jwtDecode(t.refresh);
+          if (u.exp < currentTime) {
+            alert("Your session has expired, please log in again");
+            logoutUser();
+          }
         }
       } catch (err) {
         console.log(err);
       }
     };
-    if (user.type === "admin"){fetchExperts();}
-  }, []);
-
+    if (user.type === "admin") {
+      fetchExperts();
+    }
+  }, [refetchExperts]);
+  /* Fetch the tickets */ 
   useEffect(() => {
     const fetchData = async () => {
       const authorization = "Bearer " + authTokens.access;
@@ -239,8 +300,19 @@ export function Tables(props) {
           setTickets(data);
           setHomeTickets(data);
         } else if (response.status == 401) {
-          alert("Your session has expired, please log in again");
-          logoutUser();
+          const currentTime = Date.now() / 1000;
+          const t = authTokens;
+          const u = jwtDecode(t.refresh);
+          if (u.exp < currentTime) {
+            alert("Your session has expired, please log in again");
+            logoutUser();
+          } else {
+            const res = await updateToken();
+            if (res) {
+              setActionHappened(!actionHappened);
+              setRefetchExperts(!refetchExperts);
+            }
+          }
         } else {
           console.log("Failed to fetch");
         }
@@ -248,11 +320,10 @@ export function Tables(props) {
         console.log(err);
       }
     };
-    if (authTokens) {
-      fetchData();
-    }
-  }, [authTokens, open, actionHappened]);
+    fetchData();
+  }, [actionHappened]);
 
+  /* Filter the brought tickets */
   useEffect(() => {
     let list = [];
     let condition = "";
@@ -532,14 +603,12 @@ export function Tables(props) {
                             </IconButton>
                           </Tooltip>
 
-                           {user.type === "admin" && etat === "waiting" && (
+                          {user.type === "admin" && etat === "waiting" && (
                             <Menu>
                               <MenuHandler>
-                                
                                 <IconButton variant="text" color="blue-gray">
                                   <PaperAirplaneIcon className="text-black-300 h-5 w-5" />
                                 </IconButton>
-              
                               </MenuHandler>
                               <MenuList className="menu flex max-h-64 w-72 flex-col gap-2 overflow-auto">
                                 {experts.map((expert) => {
@@ -563,7 +632,7 @@ export function Tables(props) {
                                           className="font-normal"
                                         >
                                           <p className="font-medium text-blue-gray-900">
-                                            {expert.first_name+" "}
+                                            {expert.first_name + " "}
                                             {expert.last_name}
                                           </p>
                                           {expert.domaine_expertise}
@@ -574,7 +643,7 @@ export function Tables(props) {
                                 })}
                               </MenuList>
                             </Menu>
-                          )} 
+                          )}
                           {user.type === "admin" && etat !== "archived" && (
                             <Tooltip
                               content="Remove to Archive"
@@ -605,7 +674,11 @@ export function Tables(props) {
           )}
         </CardBody>
       </Card>
-      <AddTickets open={open} handleOpen={handleOpen} />
+      <AddTickets
+        open={open}
+        handleOpen={handleOpen}
+        handleAction={handleAction}
+      />
       <Discussion
         open={openDiscussion}
         handleOpen={handleOpenDiscussion}

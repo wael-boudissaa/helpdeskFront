@@ -1,43 +1,44 @@
 import {
   Card,
-  CardBody,
-  CardHeader,
-  CardFooter,
-  Avatar,
+  // CardBody,
+  // CardHeader,
+  // CardFooter,
+  // Avatar,
   Typography,
   Tabs,
   TabsHeader,
   Tab,
-  Switch,
+  // Switch,
   Tooltip,
-  Button,
-  DialogBody,
-  Dialog,
+  // Button,
+  // DialogBody,
+  // Dialog,
   IconButton,
 } from "@material-tailwind/react";
 import {
   HomeIcon,
-  ChatBubbleLeftEllipsisIcon,
-  Cog6ToothIcon,
-  PencilIcon,
-  CheckIcon,
+  // ChatBubbleLeftEllipsisIcon,
+  // Cog6ToothIcon,
+  // PencilIcon,
+  // CheckIcon,
   PlusCircleIcon,
 } from "@heroicons/react/24/solid";
-import { Link } from "react-router-dom";
-import { ProfileInfoCard, MessageCard } from "@/widgets/cards";
-import { platformSettingsData, conversationsData, projectsData } from "@/data";
+// import { Link } from "react-router-dom";
+// import { ProfileInfoCard, MessageCard } from "@/widgets/cards";
+// import { platformSettingsData, conversationsData, projectsData } from "@/data";
 import { createElement, useContext, useEffect, useState } from "react";
 
 import AuthContext from "@/context/AuthContext";
 import { useMaterialTailwindController } from "@/context";
 import AddUser from "@/widgets/pop-ups/AddUser";
-import { data } from "autoprefixer";
+// import { data } from "autoprefixer";
+import jwtDecode from "jwt-decode";
 
 export function Profile() {
   //** Bring the users from the backend fetch methode  */
   const [profiles, setProfiles] = useState([]);
   const [dataSent,setDataSent]= useState(false)
-  const { authTokens } = useContext(AuthContext);
+  const { authTokens, logoutUser, updateToken } = useContext(AuthContext);
   const [controller] = useMaterialTailwindController();
   const { sidenavColor } = controller;
   const adjustDate = (isoDate) => {
@@ -47,8 +48,8 @@ export function Profile() {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      second: "2-digit",
-      timeZoneName: "short",
+      // second: "2-digit",
+      // timeZoneName: "short",
     };
     const date = new Date(isoDate);
     return date.toLocaleDateString("en-US", options);
@@ -69,9 +70,18 @@ export function Profile() {
         );
         if (response.ok) {
           const fetchedP = await response.json();
-
-          setProfiles(fetchedP);
-          
+          setProfiles(fetchedP);        
+        } else if (response.status == 401) {
+          const currentTime = Date.now() / 1000;
+          const t = authTokens
+          const u = jwtDecode(t.refresh);
+          if (u.exp < currentTime) {
+            alert("Your session has expired, please log in again");
+            logoutUser();
+          } else {
+            const res = await updateToken();
+            if (res) setDataSent(!dataSent);
+          }
         }
       } catch (err) {
         console.log(err);
@@ -81,12 +91,12 @@ export function Profile() {
   }, [dataSent]);
 
   const TABLE_HEAD = [
-    "username",
+    "Username",
     "First Name ",
     "Last Name",
     "Job",
-    "Data Joined",
-    "email",
+    "Date Joined",
+    "Email",
   ];
   const [addUser, setAddUser] =useState(false);
 

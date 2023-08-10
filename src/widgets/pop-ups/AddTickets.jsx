@@ -15,9 +15,10 @@ import AuthContext from "@/context/AuthContext";
 import SnackBar from "../SnackBar";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import jwtDecode from "jwt-decode";
 
-export function AddTickets({ open, handleOpen }) {
-  const { user, authTokens, logoutUser } = useContext(AuthContext);
+export function AddTickets({ open, handleOpen, handleAction }) {
+  const { user, authTokens, logoutUser, updateToken } = useContext(AuthContext);
   const versionOptions = ["Application", "IT Assistance", "Hardware"];
   const priorities = ["High", "Medium", "Low"];
   const [message, setMessage] = useState("");
@@ -91,7 +92,7 @@ export function AddTickets({ open, handleOpen }) {
           }),
         });
         if (response.ok) {
-          setSnackbarMessage("Successfully sent !");
+          setSnackbarMessage("Ticket Successfully sent !");
           setShowSnackbar(true);
           setColor("bg-green-300");
           const data = await response.json();
@@ -106,25 +107,26 @@ export function AddTickets({ open, handleOpen }) {
               idTicket: data.idTicket,
               text: message,
             }),
-          }).catch((err) =>
-            showErrorToast("The Ticket message haven't been sent")
-          );
+          }).catch(() => showErrorToast("Message haven't been sent"))
+          handleAction();
           handleClose();
         } else if (response.status == 401) {
-          alert("Your session has expired, please log in again");
-          logoutUser();
+          const currentTime = Date.now() / 1000;
+          const t = authTokens
+          const u = jwtDecode(t.refresh);
+          if (u.exp < currentTime) {
+            alert("Your session has expired, please log in again");
+            logoutUser();
+          } else {
+            await updateToken();
+            showErrorToast("Sending Failed, Try again");
+          }
         } else {
           const data = await response.json();
-          console.log(data);
-          setSnackbarMessage(`${data.msg}`);
-          setShowSnackbar(true);
-          setColor("bg-red-300");
-          handleClose();
+          showErrorToast(`${data.msg}`);
         }
       } catch (err) {
-        setSnackbarMessage(`Network error`);
-        setShowSnackbar(true);
-        setColor("bg-red-300");
+        showErrorToast("Network error");
       }
     } else {
       let message = "Missing required fields: ";
@@ -210,7 +212,11 @@ export function AddTickets({ open, handleOpen }) {
                   })}
                 </Select>
               </div>
-              <Textarea onChange={(e) => setMessage(e.target.value)} maxLength={800} label="Message" />
+              <Textarea
+                onChange={(e) => setMessage(e.target.value)}
+                maxLength={800}
+                label="Message"
+              />
             </div>
           </div>
         </DialogBody>
