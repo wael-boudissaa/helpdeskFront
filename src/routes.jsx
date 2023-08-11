@@ -29,12 +29,6 @@ export const routes = [
         path: "/profiles",
         element: <Profile />,
       },
-      {
-        icon: <TableCellsIcon {...icon} />,
-        name: "Notifications",
-        path: "/notifications",
-        element: <Notifications />,
-      },
       
 
     ],

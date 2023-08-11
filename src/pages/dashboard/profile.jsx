@@ -22,6 +22,8 @@ import {
   // PencilIcon,
   // CheckIcon,
   PlusCircleIcon,
+  UserGroupIcon,
+  UsersIcon,
 } from "@heroicons/react/24/solid";
 // import { Link } from "react-router-dom";
 // import { ProfileInfoCard, MessageCard } from "@/widgets/cards";
@@ -123,8 +125,10 @@ export function Profile() {
         <TabsHeader>
           {TypeTable.map((e) => (
             <Tab value={e} onClick={() => setTypeTable(e)}>
-              <div>
-                {createElement(HomeIcon, { className: "w-5 h-5" })}
+              <div className="flex flex-col justify-center items-center">
+                {(e === "All")? createElement(UserGroupIcon, { className: "w-5 h-5" })
+                :createElement(UsersIcon, { className: "w-5 h-5" })
+                }
                 {e}
               </div>
             </Tab>

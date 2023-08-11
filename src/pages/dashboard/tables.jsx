@@ -23,6 +23,7 @@ import {
   PaperAirplaneIcon,
   CheckIcon,
   PlusCircleIcon,
+  BellAlertIcon,
 } from "@heroicons/react/24/solid";
 import { RemoveTicket } from "@/widgets/pop-ups/RemoveTicket";
 import { AddTickets } from "@/widgets/pop-ups/AddTickets";
@@ -334,7 +335,41 @@ export function Tables(props) {
       if (t.etat === condition) list.push(t);
     }
     setFilteredTickets(list);
+
   }, [tickets, selectedTable]);
+
+  const deleteNotifications = async (idTicket) => {
+    const authorization = "Bearer " + authTokens.access;
+      const requestOptions = {
+        method: "DELETE",
+        headers: {
+          Authorization: authorization,
+        },
+      };
+    try{
+      const response = await fetch(`http://127.0.0.1:8000/api/notifications/${idTicket}`, requestOptions);
+      if (response.ok){
+        console.log("3maha wail");
+        let list = [];
+        for (let i of filtredTickets){
+          list.push(i)
+          if(i.idTicket === idTicket) {
+            i.newMessage = false;
+          }
+        }
+        setFilteredTickets(list);
+        console.log(list);
+      }
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  const colorOfPriority = (priority) => {
+    if(priority == 1) return "bg-red-50";
+    if(priority == 2) return "bg-yellow-50";
+    if(priority == 3) return "bg-green-50"
+  }
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
@@ -393,6 +428,8 @@ export function Tables(props) {
                       creationDate,
                       jobtitle,
                       idTicket,
+                      newMessage,
+                      priority
                     },
                     key
                   ) => {
@@ -403,14 +440,14 @@ export function Tables(props) {
                     }`;
 
                     return (
-                      <tr>
+                      <tr className={`${colorOfPriority(priority)}`}>
                         <td className={className}>
                           <div className="flex items-center gap-4">
                             <div>
                               <Typography
                                 variant="small"
                                 color="blue-gray"
-                                className="font-semibold"
+                                className={`font-semibold ${(username === "Ticket not Affected Yet") && "text-red-500"}`}
                               >
                                 {username}
                               </Typography>
@@ -451,9 +488,10 @@ export function Tables(props) {
                                 fetchMessages(idTicket);
                                 setDiscussionTicketState(etat);
                                 setDiscussionTicketId(idTicket);
+                                if (newMessage) deleteNotifications(idTicket);
                               }}
                             >
-                              <EnvelopeIcon className="h-5 w-5 text-blue-300" />
+                              {(!newMessage)?<EnvelopeIcon className="h-5 w-5 text-blue-300" />:<BellAlertIcon className="h-5 w-5 text-red-400" />}
                             </IconButton>
                           </Tooltip>
                           {user.type === "expert" && etat === "waiting" && (
@@ -522,6 +560,7 @@ export function Tables(props) {
                       jobtitle,
                       expertname,
                       expertjob,
+                      priority
                     },
                     key
                   ) => {
@@ -532,7 +571,7 @@ export function Tables(props) {
                     }`;
 
                     return (
-                      <tr>
+                      <tr className={`${colorOfPriority(priority)}`}>
                         <td className={className}>
                           <div className="flex items-center gap-4">
                             {/* <Avatar src={img} alt={name} size="sm" /> */}
@@ -540,7 +579,7 @@ export function Tables(props) {
                               <Typography
                                 variant="small"
                                 color="blue-gray"
-                                className="font-semibold"
+                                className={`font-semibold ${(expertname === "Ticket not Affected Yet") && "text-red-500"}`}
                               >
                                 {expertname}
                               </Typography>
