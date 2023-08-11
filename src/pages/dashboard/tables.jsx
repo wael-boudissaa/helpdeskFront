@@ -218,7 +218,6 @@ export function Tables(props) {
   }, [refetchMsg])
 
   const fetchMessages = async (idTicket) => {
-    console.log(authTokens.access);
     try {
       const authorization = "Bearer " + authTokens.access;
       const response = await fetch(

@@ -22,7 +22,7 @@ import {
 import { StatisticsCard } from "@/widgets/cards";
 // import { StatisticsChart } from "@/widgets/charts";
 import {
-  statisticsCardsData,
+  statisticsCardsData
   // statisticsChartsData,
   // projectsTableData,
   // ordersOverviewData,

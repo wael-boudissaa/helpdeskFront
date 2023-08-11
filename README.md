@@ -96,7 +96,7 @@ The documentation for the Material Tailwind Dashboard React is hosted at our [we
 Within the download you'll find the following directories and files:
 
 ```
-material-tailwind-dashboard-react
+helpdeskkfrontend
     ├── public
     │   ├── css
     │   └── img
