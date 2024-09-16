@@ -73,7 +73,7 @@ export function Tables(props) {
   const handleOpenValidate = () => setOpenValidate(!openValidate);
   const [actionHappened, setActionHappened] = useState(false);
   const [refetchMsg, setRefetchMsg] = useState(false);
-  const [refetchExperts, setRefetchExperts] = useState(false)
+  const [refetchExperts, setRefetchExperts] = useState(false);
   const [initialRender, setInitialRender] = useState(true);
   const handleAction = () => setActionHappened(!actionHappened);
   const handleOpenDeleteSure = () => setOpenDeleteSure(!openDeleteSure);
@@ -83,7 +83,7 @@ export function Tables(props) {
     if (user.type == "expert") {
       return "applicant";
     }
-    return "expert"; 
+    return "expert";
   }; /* a table header */
   const DeleteTicket = async (deletedTicket) => {
     const authorization = "Bearer " + authTokens.access;
@@ -215,7 +215,7 @@ export function Tables(props) {
     } else {
       setInitialRender(false);
     }
-  }, [refetchMsg])
+  }, [refetchMsg]);
 
   const fetchMessages = async (idTicket) => {
     try {
@@ -280,7 +280,7 @@ export function Tables(props) {
       fetchExperts();
     }
   }, [refetchExperts]);
-  /* Fetch the tickets */ 
+  /* Fetch the tickets */
   useEffect(() => {
     const fetchData = async () => {
       const authorization = "Bearer " + authTokens.access;
@@ -334,41 +334,43 @@ export function Tables(props) {
       if (t.etat === condition) list.push(t);
     }
     setFilteredTickets(list);
-
   }, [tickets, selectedTable]);
 
   const deleteNotifications = async (idTicket) => {
     const authorization = "Bearer " + authTokens.access;
-      const requestOptions = {
-        method: "DELETE",
-        headers: {
-          Authorization: authorization,
-        },
-      };
-    try{
-      const response = await fetch(`http://127.0.0.1:8000/api/notifications/${idTicket}`, requestOptions);
-      if (response.ok){
+    const requestOptions = {
+      method: "DELETE",
+      headers: {
+        Authorization: authorization,
+      },
+    };
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/notifications/${idTicket}`,
+        requestOptions
+      );
+      if (response.ok) {
         console.log("3maha wail");
         let list = [];
-        for (let i of filtredTickets){
-          list.push(i)
-          if(i.idTicket === idTicket) {
+        for (let i of filtredTickets) {
+          list.push(i);
+          if (i.idTicket === idTicket) {
             i.newMessage = false;
           }
         }
         setFilteredTickets(list);
         console.log(list);
       }
-    }catch(err){
+    } catch (err) {
       console.log(err);
     }
-  }
+  };
 
   const colorOfPriority = (priority) => {
-    if(priority == 1) return "bg-red-50";
-    if(priority == 2) return "bg-yellow-50";
-    if(priority == 3) return "bg-green-50"
-  }
+    if (priority == 1) return "bg-red-50";
+    if (priority == 2) return "bg-yellow-50";
+    if (priority == 3) return "bg-green-50";
+  };
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
@@ -428,7 +430,7 @@ export function Tables(props) {
                       jobtitle,
                       idTicket,
                       newMessage,
-                      priority
+                      priority,
                     },
                     key
                   ) => {
@@ -446,7 +448,10 @@ export function Tables(props) {
                               <Typography
                                 variant="small"
                                 color="blue-gray"
-                                className={`font-semibold ${(username === "Ticket not Affected Yet") && "text-red-500"}`}
+                                className={`font-semibold ${
+                                  username === "Ticket not Affected Yet" &&
+                                  "text-red-500"
+                                }`}
                               >
                                 {username}
                               </Typography>
@@ -490,7 +495,11 @@ export function Tables(props) {
                                 if (newMessage) deleteNotifications(idTicket);
                               }}
                             >
-                              {(!newMessage)?<EnvelopeIcon className="h-5 w-5 text-blue-300" />:<BellAlertIcon className="h-5 w-5 text-red-400" />}
+                              {!newMessage ? (
+                                <EnvelopeIcon className="h-5 w-5 text-blue-300" />
+                              ) : (
+                                <BellAlertIcon className="h-5 w-5 text-red-400" />
+                              )}
                             </IconButton>
                           </Tooltip>
                           {user.type === "expert" && etat === "waiting" && (
@@ -559,7 +568,7 @@ export function Tables(props) {
                       jobtitle,
                       expertname,
                       expertjob,
-                      priority
+                      priority,
                     },
                     key
                   ) => {
@@ -578,7 +587,10 @@ export function Tables(props) {
                               <Typography
                                 variant="small"
                                 color="blue-gray"
-                                className={`font-semibold ${(expertname === "Ticket not Affected Yet") && "text-red-500"}`}
+                                className={`font-semibold ${
+                                  expertname === "Ticket not Affected Yet" &&
+                                  "text-red-500"
+                                }`}
                               >
                                 {expertname}
                               </Typography>
